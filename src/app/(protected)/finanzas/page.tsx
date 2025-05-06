@@ -19,13 +19,7 @@ export default function FinanzasDashboard() {
     <div className="p-6 space-y-6 h-screen h-[85vh]">
       {/* Fila superior 30% de alto */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-[35%]">
-        <div className="bg-gray-800 shadow rounded p-4">
-          <GraficoPorSede
-            companyId={user.company_id}
-            sedeId={user.sede_id}
-            refresh={refreshTrigger}
-          />
-        </div>
+        <div className="bg-gray-800 shadow rounded p-4"></div>
         <div className="bg-gray-800 shadow rounded p-4">📈 Card 2</div>
         <div className="bg-gray-800 shadow rounded p-4">💼 Card 3</div>
       </div>
@@ -35,11 +29,6 @@ export default function FinanzasDashboard() {
         {/* Columna izquierda (40%) */}
         <div className="md:col-span-2 bg-gray-800 shadow rounded p-4 overflow-auto">
           {/* Componente futuro: resumen por sede */}
-          <ResumenPorSede
-            companyId={user.company_id}
-            sedeId={user.sede_id}
-            refresh={refreshTrigger}
-          />
         </div>
 
         {/* Columna derecha (60%) */}
