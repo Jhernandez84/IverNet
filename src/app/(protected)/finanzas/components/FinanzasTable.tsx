@@ -69,7 +69,7 @@ export default function FinanzasTable({ refresh, setRefresh, filtros }: Props) {
     query = query.order(orden.key, { ascending: orden.asc });
 
     const { data, error } = await query;
-    console.log(data);
+    // console.log(data);
     if (!error) {
       const movimientosConSede = (data || []).map((mov) => ({
         ...mov,

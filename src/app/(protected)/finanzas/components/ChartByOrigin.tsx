@@ -20,13 +20,23 @@ type Props = {
   refresh: number;
 };
 
+type Sede = {
+  nombre: string;
+};
+
+type Movimiento = {
+  monto: number;
+  tipo: "Ingreso" | "Egreso";
+  sedes?: Sede;
+};
+
 export default function GraficoPorSede({ companyId, sedeId, refresh }: Props) {
   const [chartData, setChartData] = useState<any>(null);
 
   const fetchData = async () => {
     let query = supabase
       .from("finanzas")
-      .select("monto, tipo, sedes(nombre)")
+      .select("monto, tipo, sedes!sede_id(nombre)")
       .eq("company_id", companyId);
 
     if (sedeId) {
@@ -40,22 +50,21 @@ export default function GraficoPorSede({ companyId, sedeId, refresh }: Props) {
       return;
     }
 
-    const movimientos = (data || []).map((mov) => ({
-      ...mov,
-      sede: mov.sedes?.nombre || "Sin sede", // aplanar
-    }));
-
+    const movimientos = data as Movimiento[];
     const resumen: Record<string, { nombre: string; saldo: number }> = {};
 
     for (const m of movimientos) {
-      const sede = m.sede;
+      const nombreSede = m.sedes?.nombre || "Sin sede";
 
-      if (!resumen[sede]) {
-        resumen[sede] = { nombre: sede, saldo: 0 };
+      if (!resumen[nombreSede]) {
+        resumen[nombreSede] = { nombre: nombreSede, saldo: 0 };
       }
 
-      if (m.tipo === "Ingreso") resumen[sede].saldo += m.monto;
-      else if (m.tipo === "Egreso") resumen[sede].saldo -= m.monto;
+      if (m.tipo === "Ingreso") {
+        resumen[nombreSede].saldo += m.monto;
+      } else if (m.tipo === "Egreso") {
+        resumen[nombreSede].saldo -= m.monto;
+      }
     }
 
     const labels = Object.values(resumen).map((r) => r.nombre);
@@ -64,16 +73,6 @@ export default function GraficoPorSede({ companyId, sedeId, refresh }: Props) {
     setChartData({
       labels,
       datasets: [
-        //   {
-        //     label: "Ingresos",
-        //     data: ingresos,
-        //     backgroundColor: "#4ade80",
-        //   },
-        //   {
-        //     label: "Egresos",
-        //     data: egresos,
-        //     backgroundColor: "#f87171",
-        //   },
         {
           label: "Saldo",
           data: saldos,
@@ -85,7 +84,7 @@ export default function GraficoPorSede({ companyId, sedeId, refresh }: Props) {
 
   useEffect(() => {
     fetchData();
-  }, [companyId, refresh]);
+  }, [companyId, sedeId, refresh]);
 
   if (!chartData)
     return <p className="text-sm text-gray-500">Cargando gráfico...</p>;
@@ -99,7 +98,6 @@ export default function GraficoPorSede({ companyId, sedeId, refresh }: Props) {
         options={{
           responsive: true,
           plugins: {
-            // legend: { position: "bottom" },
             legend: { display: false },
           },
           scales: {
