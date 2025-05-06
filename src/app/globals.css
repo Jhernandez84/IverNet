@@ -1,8 +1,13 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import "flowbite-react/components"; */
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --color: #171717;
 }
 
 @theme inline {
