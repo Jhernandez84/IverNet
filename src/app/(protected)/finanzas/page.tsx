@@ -3,8 +3,6 @@
 import { useState } from "react";
 import FinanzasForm from "./components/FinanzasForm";
 import FinanzasTable from "./components/FinanzasTable";
-import ResumenPorSede from "./components/MovementsSummary";
-import GraficoPorSede from "./components/ChartByOrigin";
 import { useUserSession } from "@/hooks/useUserSession";
 
 export default function FinanzasDashboard() {

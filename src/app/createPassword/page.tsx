@@ -71,7 +71,7 @@ export default function SignupPage() {
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow text-gray-800">
       <h1 className="text-xl font-bold mb-4 text-center">
-        Establecer contraseña para {dara}
+        {/* Establecer contraseña para {data} */}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">

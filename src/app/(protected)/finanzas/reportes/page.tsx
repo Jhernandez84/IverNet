@@ -4,6 +4,8 @@ import { useState } from "react";
 import FinanzasTable from "../components/FinanzasTable";
 
 export default function ReportesFinancieros() {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const [filtros, setFiltros] = useState({
     fechaDesde: "",
     fechaHasta: "",
@@ -83,7 +85,11 @@ export default function ReportesFinancieros() {
         {/* Agrega más filtros: sede, estado, medio_pago... */}
       </div>
 
-      <FinanzasTable filtros={filtros} />
+      <FinanzasTable
+        filtros={filtros}
+        refresh={refreshTrigger}
+        setRefresh={setRefreshTrigger}
+      />
     </div>
   );
 }
