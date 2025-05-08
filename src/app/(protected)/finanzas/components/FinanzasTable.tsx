@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/app/utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
+import FinanzasForm from "./FinanzasForm";
 import {
   ArrowUpIcon,
   ArrowDownIcon,
@@ -48,6 +49,8 @@ export default function FinanzasTable({ refresh, setRefresh, filtros }: Props) {
   });
   const [editId, setEditId] = useState<string | null>(null);
   const [editMonto, setEditMonto] = useState<number>(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showForm, setShowForm] = useState(false);
 
   const cargarMovimientos = async () => {
     let query = supabase.from("finanzas").select("*, sedes(nombre)");
@@ -141,13 +144,46 @@ export default function FinanzasTable({ refresh, setRefresh, filtros }: Props) {
         <h2 className="text-lg font-bold text-gray-800">
           Movimientos Financieros
         </h2>
-        <input
-          type="text"
-          placeholder="Buscar..."
-          className="border px-2 py-1 rounded"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-        />
+        {showForm && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+            <div className="bg-gray-700 rounded-lg shadow-lg w-full max-w-xl p-6 relative">
+              <button
+                onClick={() => setShowForm(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
+              >
+                ×
+              </button>
+
+              <h3 className="text-xl font-bold mb-4 text-white">
+                Registrar Movimiento
+              </h3>
+              <FinanzasForm
+                userId={user.id}
+                companyId={user.company_id}
+                onSaved={() => {
+                  setRefreshTrigger((prev) => prev + 1); // ✅ fuerza refresh de tabla
+                  setShowForm(false);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 text-white px-4 py-2 sm mr-4 rounded hover:bg-blue-700"
+          >
+            + Agregar movimiento
+          </button>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            className="border px-2 py-1 rounded"
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto">

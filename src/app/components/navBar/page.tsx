@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -61,21 +61,17 @@ export default function NavBar() {
       key: "calendario",
       current: false,
     },
-    { name: "Ajustes", href: "/ajustes", key: "ajustes", current: false },
   ];
 
   const { user, loading } = useUserSession();
   if (loading) return null;
 
+  const pathname = usePathname();
+  const router = useRouter();
+
   const navigation = baseNavigation.filter((item) =>
     user?.access.includes(item.key)
   );
-
-  // console.log("USER SESSION:", user);
-  // console.log("ACCESS:", user?.access);
-
-  const pathname = usePathname();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -126,18 +122,6 @@ export default function NavBar() {
                               "rounded-md px-3 py-2 text-sm font-medium"
                             )}
                           >
-                            {/* <Link
-                              key={item.name}
-                              href={item.href}
-                              className={classNames(
-                                isActive
-                                  ? "bg-gray-900 text-white"
-                                  : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                                "rounded-md px-3 py-2 text-sm font-medium"
-                              )}
-                            >
-                              {item.name}
-                            </Link> */}
                             Finanzas
                           </MenuButton>
                         </div>
@@ -176,18 +160,20 @@ export default function NavBar() {
                   }
 
                   return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={classNames(
-                        isActive
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                        "rounded-md px-3 py-2 text-sm font-medium"
-                      )}
-                    >
-                      {item.name}
-                    </Link>
+                    <>
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={classNames(
+                          isActive
+                            ? "bg-gray-900 text-white"
+                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                          "rounded-md px-3 py-2 text-sm font-medium"
+                        )}
+                      >
+                        {item.name}
+                      </Link>
+                    </>
                   );
                 })}
               </div>
@@ -230,12 +216,13 @@ export default function NavBar() {
                   </Link>
                 </MenuItem>
                 <MenuItem>
-                  <a
-                    href="#"
+                  <Link
+                    key="settings"
+                    href="settings"
                     className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
                   >
                     Settings
-                  </a>
+                  </Link>
                 </MenuItem>
                 <MenuItem>
                   <a

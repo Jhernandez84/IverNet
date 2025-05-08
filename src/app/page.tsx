@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -23,7 +24,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push("/secretaria");
+      router.push("/clientDashboard");
     }
   };
 

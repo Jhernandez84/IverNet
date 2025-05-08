@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../utils/supabaseClients";
+import { useUserSession } from "@/hooks/useUserSession";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user, loading } = useUserSession();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +25,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
+      console.log(user?.access);
       router.push("/secretaria");
     }
   };

@@ -117,7 +117,7 @@ export default function MantenedorMovimientos() {
   if (loading || !user) return <p className="p-6">Cargando...</p>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 mx-auto space-y-6">
       <form
         onSubmit={handleSubmit}
         className="space-y-4 bg-gray-700 p-4 rounded shadow"
@@ -188,10 +188,12 @@ export default function MantenedorMovimientos() {
         </div>
       </form>
 
-      <div className="bg-gray-700 shadow rounded p-4">
+      <div className="bg-gray-700 shadow rounded p-4 h-[60vh] text-white">
         <h3 className="text-lg font-bold mb-4">
           Vista tipos de movimientos registrados
         </h3>
+
+        {/* Header table */}
         <table className="w-full text-sm table-auto">
           <thead>
             <tr className="bg-gray-800">
@@ -202,38 +204,44 @@ export default function MantenedorMovimientos() {
               <th className="p-2">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {movimientos.map((m) => (
-              <tr key={m.id} className="border-t">
-                <td className="p-2 text-left">{m.tipo_movimiento}</td>
-                <td className="p-2 text-center">{m.tipo_mov_contable}</td>
-                <td className="p-2 text-center">{m.tipo_mov_generico}</td>
-                <td className="p-2 text-center">{m.activo ? "✅" : "❌"}</td>
-                <td className="p-2 text-center space-x-2">
-                  <button
-                    onClick={() => handleEdit(m)}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => toggleActivo(m.id, m.activo)}
-                    className="text-yellow-600 hover:underline"
-                  >
-                    Cambiar estado
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {movimientos.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-center p-4">
-                  No hay registros activos
-                </td>
-              </tr>
-            )}
-          </tbody>
         </table>
+
+        {/* Scrollable body */}
+        <div className="h-[45vh] overflow-y-auto">
+          <table className="w-full text-sm table-auto">
+            <tbody>
+              {movimientos.map((m) => (
+                <tr key={m.id} className="border-t border-gray-600">
+                  <td className="p-2 text-left">{m.tipo_movimiento}</td>
+                  <td className="p-2 text-center">{m.tipo_mov_contable}</td>
+                  <td className="p-2 text-center">{m.tipo_mov_generico}</td>
+                  <td className="p-2 text-center">{m.activo ? "✅" : "❌"}</td>
+                  <td className="p-2 text-center space-x-2">
+                    <button
+                      onClick={() => handleEdit(m)}
+                      className="text-blue-300 hover:underline"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => toggleActivo(m.id, m.activo)}
+                      className="text-yellow-300 hover:underline"
+                    >
+                      Cambiar estado
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {movimientos.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-center p-4">
+                    No hay registros activos
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
