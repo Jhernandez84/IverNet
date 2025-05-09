@@ -32,19 +32,19 @@ export default function FinanzasDashboard() {
         {/* Columna derecha (60%) */}
         <div className="md:col-span-3 bg-gray-800 shadow rounded p-4 overflow-auto">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Últimos movimientos</h2>
-            <button
+            {/* <h2 className="text-lg font-semibold">Últimos movimientos</h2> */}
+            {/* <button
               onClick={() => setShowForm(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               + Agregar movimiento
-            </button>
+            </button> */}
             {/* Acceso a formulario para agregar movimientos */}
 
             {/* Modal del formulario */}
             {showForm && (
-              <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-                <div className="bg-gray-700 rounded-lg shadow-lg w-full max-w-xl p-6 relative">
+              <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center ">
+                <div className="bg-gray-700 rounded-lg shadow-lg w-full max-w-xl p-6 relative w-[50vw]">
                   <button
                     onClick={() => setShowForm(false)}
                     className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"

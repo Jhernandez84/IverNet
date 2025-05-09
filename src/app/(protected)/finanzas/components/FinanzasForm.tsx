@@ -13,18 +13,10 @@ export default function FinanzasForm({
   companyId: string;
   onSaved?: () => void;
 }) {
+  const fecha = new Date().toISOString().split("T")[0];
+
   const { user, loading: sessionLoading } = useUserSession();
   const [tipoPrincMov, setTipoPrincMov] = useState("Ingreso");
-  const [form, setForm] = useState({
-    fecha: "",
-    tipo: tipoPrincMov,
-    tipo_mov: "",
-    metodo_pago: "Efectivo",
-    monto: "0",
-    observaciones: "",
-    estado: "Ingresado",
-    sede_id: user?.sede_id,
-  });
   const [loadTipoMovimiento, setLoadTipoMovimiento] = useState(false);
   const [errorTipoMovimiento, setErrorTipoMovimiento] = useState<string | null>(
     null
@@ -90,6 +82,18 @@ export default function FinanzasForm({
     }
   };
 
+  const [form, setForm] = useState({
+    fecha: fecha,
+    tipo: tipoPrincMov,
+    tipo_mov: "Ingreso",
+    metodo_pago: "Efectivo",
+    monto: "0",
+    num_doc: "",
+    observaciones: "",
+    estado: "Ingresado",
+    sede_id: user?.sede_id,
+  });
+
   useEffect(() => {
     if (companyId) {
       cargarTipoMovmiento();
@@ -102,8 +106,17 @@ export default function FinanzasForm({
     }
   }, [companyId]);
 
+  useEffect(() => {
+    if (user?.sede_id) {
+      setForm((prev) => ({
+        ...prev,
+        sede_id: user.sede_id,
+      }));
+    }
+  }, [user]);
+
   if (sessionLoading || !user) return <div>Cargando...</div>;
-  console.log(user?.sede_id?.length);
+  // console.log(user?.sede_id);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -130,6 +143,7 @@ export default function FinanzasForm({
         metodo_pago: form.metodo_pago,
         monto: parseFloat(form.monto),
         observaciones: form.observaciones,
+        num_doc: form.num_doc,
         estado: form.estado,
         sede_id: form.sede_id,
         responsable_id: userId,
@@ -147,11 +161,12 @@ export default function FinanzasForm({
       console.log("Movimiento financiero guardado exitosamente");
       if (onSaved) onSaved();
       setForm({
-        fecha: "",
+        fecha: fecha,
         tipo: tipoPrincMov,
         tipo_mov: "",
         metodo_pago: "Efectivo",
         monto: "0",
+        num_doc: "",
         observaciones: "",
         estado: "Ingresado",
         sede_id: user?.sede_id,
@@ -166,16 +181,19 @@ export default function FinanzasForm({
       {saveError && <p className="text-red-600">{saveError}</p>}
       <div className="grid grid-rows-3 gap-2">
         <div className="grid grid-cols-2 gap-2">
-          <label className="block text-sm font-medium text-white mb-1">
-            Fecha
-          </label>
-          <input
-            type="date"
-            name="fecha"
-            required
-            onChange={handleChange}
-            className="w-full border rounded p-2 text-gray-800"
-          />
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Fecha
+            </label>
+            <input
+              type="date"
+              name="fecha"
+              value={form.fecha}
+              required
+              onChange={handleChange}
+              className="w-full border rounded p-2 text-gray-800"
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-white mb-1">
@@ -193,11 +211,15 @@ export default function FinanzasForm({
               <option value="Traspaso">Traspaso</option>
             </select>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-1">
-              Clasificación del movimiento
-            </label>
+        </div>
+        <div>
+          <div
+            className={`grid gap-2 ${
+              form.tipo_mov === "Pago de arriendo"
+                ? "grid-cols-2"
+                : "grid-cols-1"
+            }`}
+          >
             {loadTipoMovimiento ? (
               <div className="w-full border rounded p-2 text-gray-800 italic text-gray-400">
                 Cargando clasificaciones...
@@ -207,35 +229,88 @@ export default function FinanzasForm({
                 Error al cargar: {errorTipoMovimiento}
               </div>
             ) : (
-              <select
-                name="tipo_mov"
-                value={form.tipo_mov}
-                required
-                onChange={handleChange}
-                className="w-full border rounded p-2 text-gray-800"
-                disabled={tipoMovimiento.length === 0}
-              >
-                <option value="">Selecciona una clasificación</option>
-                {tipoMovimiento.map((movimiento) => (
-                  <option
-                    key={movimiento.tipo_mov_generico}
-                    value={movimiento.tipo_mov_generico}
-                  >
-                    {movimiento.tipo_mov_generico}
-                  </option>
-                ))}
-                {tipoMovimiento.length === 0 && (
-                  <option disabled>
-                    No hay clasificaciones disponibles para {form.tipo}
-                  </option>
-                )}
-              </select>
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Clasificación
+                </label>
+                <select
+                  name="tipo_mov"
+                  value={form.tipo_mov}
+                  required
+                  onChange={handleChange}
+                  className="w-full border rounded p-2 text-gray-800"
+                  disabled={tipoMovimiento.length === 0}
+                >
+                  <option value="">Selecciona una clasificación</option>
+                  {tipoMovimiento.map((movimiento) => (
+                    <option
+                      key={movimiento.tipo_mov_generico}
+                      value={movimiento.tipo_mov_generico}
+                    >
+                      {movimiento.tipo_mov_generico}
+                    </option>
+                  ))}
+                  {tipoMovimiento.length === 0 && (
+                    <option disabled>
+                      No hay clasificaciones disponibles para {form.tipo}
+                    </option>
+                  )}
+                </select>
+              </div>
+            )}
+            {form.tipo_mov === "Pago de arriendo" ? (
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Número de documento
+                </label>
+                <input
+                  type="number"
+                  name="num_doc"
+                  placeholder={form.num_doc}
+                  required
+                  onChange={handleChange}
+                  className="w-full border rounded p-2 text-gray-800"
+                />
+              </div>
+            ) : (
+              []
             )}
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Monto
+            </label>
+            <input
+              type="number"
+              name="monto"
+              placeholder={form.monto}
+              required
+              onChange={handleChange}
+              className="w-full border rounded p-2 text-gray-800"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-white font-medium mb-1">
+              Método de pago
+            </label>
+            <select
+              name="metodo_pago"
+              value={form.metodo_pago}
+              onChange={handleChange}
+              className="w-full border rounded p-2 text-gray-800"
+            >
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
         <div>
-          <label className="block text-sm font-medium text-white mb-1">
+          <label className="block text-sm font-medium text-white">
             Observaciones
           </label>
           <textarea
@@ -248,72 +323,43 @@ export default function FinanzasForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-white mb-1">
-            Monto
-          </label>
-          <input
-            type="number"
-            name="monto"
-            placeholder={form.monto}
-            required
-            onChange={handleChange}
-            className="w-full border rounded p-2 text-gray-800"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm text-white font-medium mb-1">
-            Método de pago
-          </label>
-          <select
-            name="metodo_pago"
-            value={form.metodo_pago}
-            onChange={handleChange}
-            className="w-full border rounded p-2 text-gray-800"
-          >
-            <option value="Efectivo">Efectivo</option>
-            <option value="Transferencia">Transferencia</option>
-            <option value="Tarjeta">Tarjeta</option>
-            <option value="Otro">Otro</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-white mb-1">
-            Sede
-          </label>
-
-          {user?.sede_id?.length === 1 ? ["sede bloqueada"] : []}
-          {loadSedes ? (
-            <div className="w-full border rounded p-2 text-gray-800 italic text-gray-400">
-              Cargando sedes...
-            </div>
-          ) : errorSedes ? (
-            <div className="w-full border rounded p-2 text-red-600">
-              Error al cargar: {errorSedes}
-            </div>
-          ) : (
-            <select
-              name="sede_id"
-              // value={form.sede_id}
-              required
-              onChange={handleChange}
-              className="w-full border rounded p-2 text-gray-800"
-              disabled={sedes.length === 0}
-            >
-              {sedes.map((sede) => (
-                <option key={sede.id} value={sede.id}>
-                  {sede.nombre}
-                </option>
-              ))}
-              {sedes.length === 0 && (
-                <option disabled>No hay sedes disponibles</option>
-              )}
-            </select>
+          {!user?.sede_id && (
+            <label className="block text-sm font-medium text-white mb-1">
+              Seleccionar sede
+            </label>
           )}
+
+          {!user?.sede_id &&
+            (loadSedes ? (
+              <div className="w-full border rounded p-2 text-gray-800 italic text-gray-400">
+                Cargando sedes...
+              </div>
+            ) : errorSedes ? (
+              <div className="w-full border rounded p-2 text-red-600">
+                Error al cargar: {errorSedes}
+              </div>
+            ) : (
+              <select
+                name="sede_id"
+                // value={form.sede_id}
+                required
+                onChange={handleChange}
+                className="w-full border rounded p-2 text-gray-800"
+                disabled={user?.sede_id?.length === 1}
+              >
+                {sedes.map((sede) => (
+                  <option key={sede.id} value={sede.id}>
+                    {sede.nombre}
+                  </option>
+                ))}
+                {sedes.length === 0 && (
+                  <option disabled>No hay sedes disponibles</option>
+                )}
+              </select>
+            ))}
         </div>
 
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-white mb-1">
             Estado
           </label>
@@ -327,7 +373,7 @@ export default function FinanzasForm({
             <option value="Procesado">Procesado</option>
             <option value="Modificado">Modificado</option>
           </select>
-        </div>
+        </div> */}
       </div>
       <div className="text-right">
         <button

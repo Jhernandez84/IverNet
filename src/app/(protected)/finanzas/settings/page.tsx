@@ -205,7 +205,6 @@ export default function MantenedorMovimientos() {
             </tr>
           </thead>
         </table>
-
         {/* Scrollable body */}
         <div className="h-[45vh] overflow-y-auto">
           <table className="w-full text-sm table-auto">
