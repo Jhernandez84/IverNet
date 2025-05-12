@@ -8,6 +8,7 @@ type UserSession = {
   full_name: string;
   email: string;
   role: string;
+  role_id: string;
   company_id: string;
   sede_id?: string | null;
   access: string[];
@@ -35,7 +36,9 @@ export function useUserSession() {
 
       const { data: profile, error: profileError } = await supabase
         .from("users")
-        .select("id, full_name, email, role, company_id, sede_id")
+        .select(
+          "id, full_name, email, role, role_id, company_id, sede_id, sedes(nombre)"
+        )
         .eq("id", authUser.id)
         .single();
 
@@ -55,26 +58,33 @@ export function useUserSession() {
         console.error("Error al obtener accesos:", accessError);
       }
 
+      const { data: sedesAccess, error: sedesError } = await supabase
+        .from("sedes")
+        .select("id,nombre")
+        .eq("company_id", profile.company_id);
+
+      if (sedesError) {
+        console.error("Error al obtener accesos:", sedesError);
+      }
       const access = accessData?.map((item: any) => item.menu_items?.key) || [];
 
-      const scopedBySede = profile.role === "tesoreria" && !!profile.sede_id;
-
+      const scopedBySede = profile.role != "Admin" && !!profile.sede_id;
       setUser({
         id: profile.id,
         full_name: profile.full_name,
         email: profile.email,
         role: profile.role,
+        role_id: profile.role_id,
         company_id: profile.company_id,
         sede_id: profile.sede_id,
         access,
         scopedBySede,
       });
-
       setLoading(false);
     };
 
     fetchSession();
   }, []);
-
+  // console.log(user);
   return { user, loading };
 }

@@ -25,8 +25,8 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      console.log(user?.access);
-      router.push("/secretaria");
+      // console.log(user?.access);
+      router.push("/myaccount");
     }
   };
 

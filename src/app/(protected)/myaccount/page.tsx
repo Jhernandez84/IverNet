@@ -13,7 +13,9 @@ export default function MyAccountPage() {
     <div className="p-6 space-y-2">
       <h1 className="text-2xl font-bold">Hola, {user.full_name} 👋</h1>
       <p>Rol: {user.role}</p>
-      <p>Sede: {user.company_id}</p>
+      <p>Acceso principal: {user.access}</p>
+      {/* <p>Sede: {user.sede[0]</p> */}
+      <p></p>
       {/* <p>Accesos: {profile.access.join(", ")}</p> */}
     </div>
   );

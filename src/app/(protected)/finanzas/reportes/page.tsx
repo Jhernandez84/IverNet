@@ -2,6 +2,7 @@
 
 import { format, startOfMonth, startOfWeek, startOfYear } from "date-fns";
 import { es } from "date-fns/locale";
+import { useUserSession } from "@/hooks/useUserSession";
 
 import { useEffect, useState } from "react";
 import FinanzasTable from "../components/FinanzasTable";
@@ -9,6 +10,7 @@ import FinanzasTable from "../components/FinanzasTable";
 export default function ReportesFinancieros() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { user, loading } = useUserSession();
 
   const toISO = (d: Date) => format(d, "yyyy-MM-dd");
 
@@ -56,12 +58,22 @@ export default function ReportesFinancieros() {
     setFiltros({ ...filtros, [e.target.name]: e.target.value });
   };
 
+  console.log(user);
+  // user?.access.map((ac) => console.log(access));
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Reportes Financieros</h1>
 
       {/* Filtros */}
-      <div className="grid grid-cols-6 md:grid-cols-7 gap-4 mb-6 text-gray-800">
+
+      <div
+        className={`grid gap-2 ${
+          !user?.scopedBySede
+            ? "grid grid-cols-7 md:grid-cols-7 gap-4 mb-6 text-gray-800"
+            : "grid grid-cols-6 md:grid-cols-6 gap-4 mb-6 text-gray-800"
+        }`}
+      >
         <select
           name="dateView"
           value={filtros.dateView}
@@ -100,16 +112,18 @@ export default function ReportesFinancieros() {
           <option value="Egreso">Egreso</option>
           <option value="Egreso">Traspaso</option>
         </select>
-        <select
-          name="sede"
-          value={filtros.sedeId}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        >
-          <option value="">Sedes</option>
-          <option value="Ingreso">Ingreso</option>
-          <option value="Egreso">Egreso</option>
-        </select>
+        {!user?.scopedBySede && (
+          <select
+            name="sede"
+            value={filtros.sedeId}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          >
+            <option value="">Sedes</option>
+            <option value="Ingreso">Ingreso</option>
+            <option value="Egreso">Egreso</option>
+          </select>
+        )}
         <select
           name="estado"
           value={filtros.estado}
@@ -134,9 +148,9 @@ export default function ReportesFinancieros() {
       </div>
 
       <FinanzasTable
-        filtros={filtros}
-        refresh={refreshTrigger}
-        setRefresh={setRefreshTrigger}
+      // filtros={filtros}
+      // refresh={refreshTrigger}
+      // setRefresh={setRefreshTrigger}
       />
     </div>
   );

@@ -68,8 +68,8 @@ export default function FinanzasDashboard() {
             )}
           </div>
           <FinanzasTable
-            refresh={refreshTrigger}
-            setRefresh={setRefreshTrigger}
+            // refresh={refreshTrigger}
+            // setRefresh={setRefreshTrigger}
           />
           {/* ajustar con refreshTrigger si lo necesitas */}
         </div>
