@@ -217,29 +217,31 @@ export default function FinanzasForms() {
                 </td>
                 <td className="p-2">{m.sede}</td>
                 <td className="p-2">{m.estado}</td>
-                <td className="p-2 flex justify-evenly">
-                  {editId === m.id ? (
+                {allowedRoles.includes(user?.role_id ?? "") && (
+                  <td className="p-2 flex justify-evenly">
+                    {editId === m.id ? (
+                      <button
+                        onClick={handleEditSubmit}
+                        className="text-green-600 hover:underline"
+                      >
+                        <CheckIcon className="w-4 h-4 inline" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleEdit(m.id, m.monto)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        <PencilIcon className="w-4 h-4 inline" />
+                      </button>
+                    )}
                     <button
-                      onClick={handleEditSubmit}
-                      className="text-green-600 hover:underline"
+                      onClick={() => handleDelete(m.id)}
+                      className="text-red-600 hover:underline"
                     >
-                      <CheckIcon className="w-4 h-4 inline" />
+                      <TrashIcon className="w-4 h-4 inline" />
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => handleEdit(m.id, m.monto)}
-                      className="text-blue-600 hover:underline"
-                    >
-                      <PencilIcon className="w-4 h-4 inline" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(m.id)}
-                    className="text-red-600 hover:underline"
-                  >
-                    <TrashIcon className="w-4 h-4 inline" />
-                  </button>
-                </td>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

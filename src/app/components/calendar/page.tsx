@@ -8,11 +8,14 @@ import {
   startOfWeek,
   endOfWeek,
   addMonths,
+  addWeeks,
   subMonths,
   isSameMonth,
   isSameDay,
 } from "date-fns";
 import { addDays } from "date-fns/addDays";
+import { OffCanvasRight } from "../OffCanva/OffCanvaRight";
+import { useCalendarEvents } from "./useCalendarEvents";
 
 interface CalendarEvent {
   date: string; // ISO format: yyyy-MM-dd
@@ -20,50 +23,103 @@ interface CalendarEvent {
   time?: string;
 }
 
-const events: CalendarEvent[] = [
-  { date: "2025-05-03", title: "Design review", time: "10AM" },
-  { date: "2025-05-03", title: "Sales meeting", time: "2PM" },
-  { date: "2025-05-07", title: "Date night", time: "6PM" },
-  { date: "2025-05-12", title: "Sam's birthday party", time: "2PM" },
-  { date: "2025-05-22", title: "Maple syrup museum", time: "3PM" },
-  { date: "2025-05-22", title: "Hockey game", time: "7PM" },
-];
+const weekdays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const hours = Array.from({ length: 14 }, (_, i) => 8 + i); // 8:00 to 22:00
+
+type ViewMode = "month" | "week";
 
 export default function MonthlyCalendar() {
+  const [refreshEvents, setRefreshEvents] = useState(0);
+  const { events, loading } = useCalendarEvents(refreshEvents);
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>("month");
+
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState();
+  const [createEvent, setCreateEvent] = useState(false);
+
+  const createNewEvent = (val: any, editEvent: boolean) => {
+    setOpen(true);
+    setSelectedDate(val);
+    setCreateEvent(editEvent);
+    console.log(editEvent);
+  };
+
+  const next = () => {
+    setCurrentMonth(
+      viewMode === "month"
+        ? addMonths(currentMonth, 1)
+        : addWeeks(currentMonth, 1)
+    );
+  };
+  const prev = () => {
+    setCurrentMonth(
+      viewMode === "month"
+        ? addMonths(currentMonth, -1)
+        : addWeeks(currentMonth, -1)
+    );
+  };
 
   const header = () => (
     <div className="flex justify-between items-center px-4 py-2 bg-gray-800 border-b border-gray-700">
-      <div className="text-xl font-bold">
-        {format(currentMonth, "MMMM yyyy")}
+      <div className="w-[170px]"></div>
+      <div className="flex justify-between items-center bg-gray-800 w-[300px]">
+        <button
+          onClick={prev}
+          className="bg-blue-600 w-[30px] px-3 py-1 rounded"
+        >
+          ‹
+        </button>
+        <h2 className="text-md rounded px-3 py-1 bg-blue-600">
+          {viewMode === "month"
+            ? format(currentMonth, "MMMM yyyy")
+            : `${format(
+                startOfWeek(currentMonth, { weekStartsOn: 1 }),
+                "d MMM"
+              )} - ${format(
+                endOfWeek(currentMonth, { weekStartsOn: 1 }),
+                "d MMM yyyy"
+              )}`}
+        </h2>
+        <button
+          onClick={next}
+          className="bg-blue-600 w-[30px] px-3 py-1 rounded"
+        >
+          ›
+        </button>
       </div>
-      <div className="flex gap-2">
+      <div>
         <button
-          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="px-2 py-1 bg-gray-900 rounded hover:bg-gray-900"
+          className={`px-3 py-1 mr-2 rounded ${
+            viewMode === "month"
+              ? "bg-blue-600 text-white"
+              : "rounded bg-gray-900"
+          }`}
+          onClick={() => setViewMode("month")}
         >
-          &lt;
+          Mes
         </button>
         <button
-          onClick={() => setCurrentMonth(new Date())}
-          className="px-2 py-1 bg-gray-900 rounded hover:bg-gray-900"
+          className={`px-3 py-1 rounded ${
+            viewMode === "week" ? "bg-blue-600 text-white" : "bg-gray-900"
+          }`}
+          onClick={() => setViewMode("week")}
         >
-          Today
-        </button>
-        <button
-          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="px-2 py-1 bg-gray-900 rounded hover:bg-gray-900"
-        >
-          &gt;
-        </button>
-        <button className="ml-2 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-700 text-sm">
-          + Nuevo Evento
+          Semana
         </button>
       </div>
+      <OffCanvasRight
+        open={open}
+        setOpen={setOpen}
+        date={selectedDate}
+        crear={createEvent}
+      />
     </div>
   );
 
   const weekdays = [
+    "Horarios",
     "Lunes",
     "Martes",
     "Miércoles",
@@ -74,7 +130,7 @@ export default function MonthlyCalendar() {
   ];
 
   const renderDays = () => (
-    <div className="grid grid-cols-7 text-sm text-center bg-gray-800 text-white ">
+    <div className="grid grid-cols-8 text-sm text-center bg-gray-600 text-white">
       {weekdays.map((day) => (
         <div key={day} className="py-2 font-medium text-gray-100">
           {day}
@@ -84,6 +140,8 @@ export default function MonthlyCalendar() {
   );
 
   const renderCells = () => {
+    console.log(events);
+
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -103,9 +161,9 @@ export default function MonthlyCalendar() {
         days.push(
           <div
             key={day.toISOString()}
-            onClick={() => alert("Nuevo Evento")}
+            onClick={() => createNewEvent(formattedDate, false)}
             className={`border border-gray-700 p-1 align-top text-left ${
-              rows.length === 5 ? "h-16" : "h-28"
+              rows.length > 5 ? "h-28" : "h-28"
             } ${
               !isSameMonth(day, monthStart)
                 ? "bg-gray-300 text-gray-600"
@@ -126,7 +184,10 @@ export default function MonthlyCalendar() {
                 <div
                   key={idx}
                   className="text-xs truncate font-medium"
-                  onClick={() => alert("hiciste click")}
+                  onClick={(e) => {
+                    e.stopPropagation(); // ← evita que suba al padre
+                    createNewEvent(formattedDate, true);
+                  }}
                 >
                   {event.title}{" "}
                   {event.time && (
@@ -140,21 +201,92 @@ export default function MonthlyCalendar() {
         day = addDays(day, 1);
       }
       rows.push(
-        <div key={day.toISOString()} className="grid grid-cols-7 bg-gray-600">
-          {days}
-        </div>
+        <>
+          <div key={day.toISOString()} className="grid grid-cols-7 bg-gray-600">
+            {days}
+          </div>
+        </>
       );
       days = [];
     }
-    console.log(rows.length);
-    return <div>{rows}</div>;
+    // console.log(rows.length);
+    return (
+      <div>
+        {renderDays()}
+        {rows}
+      </div>
+    );
   };
 
+  const renderWeek = () => {
+    const weekStart = startOfWeek(currentMonth, { weekStartsOn: 1 });
+
+    return (
+      <div className="h-[78vh]">
+        {renderDays()}
+        <div className="h-[78vh] overflow-y-auto">
+          {hours.map((hour) => (
+            <div key={hour} className="grid grid-cols-8 border border-gray-600 bg-gray-800">
+              {/* columna de la hora */}
+              <div className="p-2 text-xs text-gray-600 h-[100px]">
+                {`${hour}:00`}
+              </div>
+
+              {/* celdas para cada día */}
+              {Array.from({ length: 7 }).map((_, i) => {
+                const day = addDays(weekStart, i);
+                const dateString = format(day, "yyyy-MM-dd");
+
+                const eventsAtHour = events.filter((ev) => {
+                  if (!ev.time) return false;
+                  const num = parseInt(ev.time, 10);
+                  const isPM = ev.time.toUpperCase().includes("PM");
+                  const evHour =
+                    isPM && num < 12 ? num + 12 : num === 12 && !isPM ? 0 : num;
+                  return ev.date === dateString && evHour === hour;
+                });
+
+                // Handler unificado: si click en celda, creas evento nuevo (isExisting = false)
+                // Si click en un evento, creas con isExisting = true
+                return (
+                  <div
+                    key={i}
+                    className="p-1 border-l border-gray-600 relative cursor-pointer bg-gray-800"
+                    onClick={() => createNewEvent(dateString, false)}
+                  >
+                    {eventsAtHour.map((ev, idx) => (
+                      <div
+                        key={idx}
+                        className="absolute w-[90%] m-2 left-0 bg-sky-600 text-xs p-1 rounded mb-1 truncate"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          createNewEvent(dateString, true);
+                        }}
+                      >
+                        {ev.title}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) return <p>Cargando eventos…</p>;
+
   return (
-    <div className="rounded shadow overflow-hidden h-[90vh]">
+    // <div className="rounded shadow overflow-hidden h-[90vh]">
+    //   {header()}
+    //   {renderDays()}
+    //   {renderCells()}
+    // </div>
+    <div className="rounded shadow h-[88vh]">
       {header()}
-      {renderDays()}
-      {renderCells()}
+      {viewMode === "week" ? renderWeek() : <>{renderCells()}</>}
     </div>
   );
 }
