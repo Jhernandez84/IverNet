@@ -14,7 +14,8 @@ import {
   isSameDay,
 } from "date-fns";
 import { addDays } from "date-fns/addDays";
-import { OffCanvasRight } from "../OffCanva/OffCanvaRight";
+import { OffCanvasRightEventForm } from "../OffCanva/OffCanvaRight";
+import { OffCanvasRightDateSelector } from "../OffCanva/OffCanvaRightDateSelector";
 import { useCalendarEvents } from "./useCalendarEvents";
 
 interface CalendarEvent {
@@ -29,17 +30,29 @@ const hours = Array.from({ length: 14 }, (_, i) => 8 + i); // 8:00 to 22:00
 type ViewMode = "month" | "week";
 
 export default function MonthlyCalendar() {
-  const [refreshEvents, setRefreshEvents] = useState(0);
-  const { events, loading } = useCalendarEvents(refreshEvents);
+  const [refresh, setRefresh] = useState(0);
+  const { events, loading } = useCalendarEvents(refresh);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("month");
 
-  const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState();
+  const [isTimeSelected, setIsTimeSelected] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [open, setOpen] = useState(false); // OffCanvasRightDateSelector
+  const [openEventForm, setOpenEventForm] = useState(false); // OffCanvasRightEventForm
   const [createEvent, setCreateEvent] = useState(false);
+  const [eventDetails, setEventDetails] = useState<string | null>(null);
 
-  const createNewEvent = (val: any, editEvent: boolean) => {
+  const createNewEvent = (val: any, editEvent: boolean, eDetails: string) => {
+    setOpenEventForm(true);
+    setSelectedDate(val);
+    setCreateEvent(editEvent);
+    setEventDetails(eDetails);
+    console.log(editEvent, "Detalle del Evento:", eDetails);
+  };
+
+  const createNewEventTime = (val: any, editEvent: boolean) => {
     setOpen(true);
     setSelectedDate(val);
     setCreateEvent(editEvent);
@@ -109,11 +122,22 @@ export default function MonthlyCalendar() {
           Semana
         </button>
       </div>
-      <OffCanvasRight
+      <OffCanvasRightDateSelector
         open={open}
         setOpen={setOpen}
+        openEventForm={openEventForm}
+        setOpenEventForm={setOpenEventForm}
         date={selectedDate}
         crear={createEvent}
+      />
+      <OffCanvasRightEventForm
+        open={openEventForm}
+        setOpen={setOpenEventForm}
+        date={selectedDate}
+        crear={createEvent}
+        refresh={refresh}
+        setRefresh={setRefresh}
+        eventDetails={eventDetails}
       />
     </div>
   );
@@ -161,7 +185,7 @@ export default function MonthlyCalendar() {
         days.push(
           <div
             key={day.toISOString()}
-            onClick={() => createNewEvent(formattedDate, false)}
+            onClick={() => createNewEventTime(formattedDate, false)}
             className={`border border-gray-700 p-1 align-top text-left ${
               rows.length > 5 ? "h-28" : "h-28"
             } ${
@@ -186,7 +210,7 @@ export default function MonthlyCalendar() {
                   className="text-xs truncate font-medium"
                   onClick={(e) => {
                     e.stopPropagation(); // ← evita que suba al padre
-                    createNewEvent(formattedDate, true);
+                    createNewEvent(formattedDate, true, event.title);
                   }}
                 >
                   {event.title}{" "}
@@ -222,13 +246,16 @@ export default function MonthlyCalendar() {
     const weekStart = startOfWeek(currentMonth, { weekStartsOn: 1 });
 
     return (
-      <div className="h-[78vh]">
+      <div className="h-[78vh] rounded">
         {renderDays()}
         <div className="h-[78vh] overflow-y-auto">
           {hours.map((hour) => (
-            <div key={hour} className="grid grid-cols-8 border border-gray-600 bg-gray-800">
+            <div
+              key={hour}
+              className="grid grid-cols-8 border border-gray-600 bg-gray-800"
+            >
               {/* columna de la hora */}
-              <div className="p-2 text-xs text-gray-600 h-[100px]">
+              <div className="p-2 text-xs text-white h-[100px]">
                 {`${hour}:00`}
               </div>
 
@@ -252,7 +279,7 @@ export default function MonthlyCalendar() {
                   <div
                     key={i}
                     className="p-1 border-l border-gray-600 relative cursor-pointer bg-gray-800"
-                    onClick={() => createNewEvent(dateString, false)}
+                    onClick={() => createNewEvent(dateString, false, "")}
                   >
                     {eventsAtHour.map((ev, idx) => (
                       <div
@@ -260,7 +287,7 @@ export default function MonthlyCalendar() {
                         className="absolute w-[90%] m-2 left-0 bg-sky-600 text-xs p-1 rounded mb-1 truncate"
                         onClick={(e) => {
                           e.stopPropagation();
-                          createNewEvent(dateString, true);
+                          createNewEvent(dateString, true, "");
                         }}
                       >
                         {ev.title}

@@ -14,9 +14,7 @@ interface OffCanvasProps {
   setOpen: Dispatch<SetStateAction<boolean>>;
   date?: string | null; // o string, según cómo lo uses
   crear?: boolean;
-  refresh: number;
-  setRefresh: Dispatch<SetStateAction<number>>;
-  eventDetails: string | null;
+  setTimeSelected: Dispatch<SetStateAction<boolean>>;
   // puedes añadir más props aquí
 }
 
@@ -25,9 +23,7 @@ export function OffCanvasRightEventForm({
   setOpen,
   date,
   crear,
-  refresh,
-  setRefresh,
-  eventDetails,
+  setTimeSelected,
 }: OffCanvasProps) {
   const [title, setTitle] = useState("");
   const [eventDate, setEventDate] = useState<string>(date || "");
@@ -37,6 +33,7 @@ export function OffCanvasRightEventForm({
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  const [refresh, setRefresh] = useState(0);
 
   // Validación de campos requeridos
   const canSave =
@@ -80,7 +77,7 @@ export function OffCanvasRightEventForm({
       setDescription("");
       // cierra el off-canvas
       setOpen(false);
-      setRefresh((r) => r + 1);
+      setTimeSelected(false);
     }
   };
 
@@ -107,7 +104,7 @@ export function OffCanvasRightEventForm({
             : "opacity-0 pointer-events-none"
         } z-40`}
         onClick={() => {
-          setOpen(false);
+          setOpen(false), setTimeSelected(false);
         }}
       />
 
