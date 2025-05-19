@@ -8,7 +8,7 @@ import {
 import { supabase } from "@/app/utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useCalendarEvents } from "../calendar/useCalendarEvents";
-import { OffCanvasRightEventForm } from "./OffCanvaRight";
+import { OffCanvasRightEventForm } from "./OffCanvasRightEventForm";
 
 interface OffCanvasProps {
   open: boolean;
@@ -17,6 +17,7 @@ interface OffCanvasProps {
   setOpenEventForm: Dispatch<SetStateAction<boolean>>;
   date?: string | null; // o string, según cómo lo uses
   crear?: boolean;
+  setTime: Dispatch<SetStateAction<string>>;
   // puedes añadir más props aquí
 }
 
@@ -27,13 +28,24 @@ export function OffCanvasRightDateSelector({
   setOpenEventForm,
   date,
   crear,
+  setTime,
 }: OffCanvasProps) {
-  const [eventDate, setEventDate] = useState<string>(date || "");
+  // const [eventDate, setEventDate] = useState<string>(date || "");
+  console.log(date);
   const [timeSelected, setTimeSelected] = useState(false);
 
-  console.log(timeSelected);
+  // console.log(eventDate);
 
-  const hours = Array.from({ length: 14 }, (_, i) => 8 + i); // 8:00 to 22:00
+  const hours = Array.from({ length: 28 }, (_, i) => {
+    const totalMinutes = 8 * 60 + i * 30;
+    const hour = Math.floor(totalMinutes / 60);
+    const minute = totalMinutes % 60;
+    // const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour >= 12 ? "PM" : "AM";
+    return `${hour.toString().padStart(2, "0")}:${minute
+      .toString()
+      .padStart(2, "0")}`;
+  });
 
   return (
     <>
@@ -52,18 +64,16 @@ export function OffCanvasRightDateSelector({
       <aside
         className={`fixed top-0 right-0 h-full bg-gray-700 text-gray-700 shadow-lg transform transition-transform ${
           open ? "translate-x-0" : "translate-x-full"
-        } p-6 z-50`}
+        } p-6 z-40`}
       >
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h5 className="text-xl font-bold text-white">
-              Horarios {eventDate}
-            </h5>
+            <h5 className="text-xl font-bold text-white">Horarios {date}</h5>
 
             <button
               onClick={() => {
-                setOpen(false);
                 setTimeSelected(false);
+                setOpen(false);
               }}
               className="text-gray-500 text-2xl leading-none"
             >
@@ -77,8 +87,9 @@ export function OffCanvasRightDateSelector({
                   key={hour}
                   className="grid grid-cols-8 border border-gray-600 bg-gray-800 cursor-pointer"
                   onClick={() => {
-                    setTimeSelected(true), setOpenEventForm(true);
-                    // setOpen(false);
+                    setTimeSelected(true),
+                      setTime(hour),
+                      setOpenEventForm(true);
                   }}
                 >
                   {/* columna de la hora */}
