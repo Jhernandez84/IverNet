@@ -176,11 +176,12 @@ OffCanvasProps) {
         console.error("Error al cargar evento:", error.message);
         return;
       }
+      console.log(data);
 
       setForm({
         ...data,
-        evtStartDate: data.evtStartDate?.slice(0, 10), // asegúrate de tener formato correcto
-        evtEndDate: data.evtEndDate?.slice(0, 10),
+        evtStartDate: data.start_date?.slice(0, 10), // asegúrate de tener formato correcto
+        evtEndDate: data.end_date?.slice(0, 10),
         evtStartTime: data.evtStartTime,
         evtEndTime: data.evtEndTime,
         evtDuration: data.duration_time,

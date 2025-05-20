@@ -183,7 +183,7 @@ export default function NavBar() {
                         <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                           <MenuItem>
                             <Link
-                              href="/calendario"
+                              href="/calendar"
                               className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Calendario
