@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/app/utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useCalendarEvents } from "../calendar/useCalendarEvents";
+import { deleteEventSoft } from "../calendar/useCalendarEvents";
 
 interface OffCanvasProps {
   open: boolean;
@@ -50,7 +51,6 @@ export function OffCanvasRightEventForm({
   evt_Id,
 }: // eventDetails,
 OffCanvasProps) {
-  console.log("Es crear evento?", crear, "Hora seleccionada ", selectedTime);
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -58,6 +58,10 @@ OffCanvasProps) {
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     console.log(form);
+  };
+
+  const deleteEvent = (evt_Id: any) => {
+    deleteEventSoft(evt_Id);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -158,6 +162,42 @@ OffCanvasProps) {
     }
   }, [selectedTime]);
 
+  useEffect(() => {
+    if (!evt_Id) return; // si no hay ID, no es edición
+
+    const loadEvent = async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", evt_Id)
+        .single();
+
+      if (error) {
+        console.error("Error al cargar evento:", error.message);
+        return;
+      }
+
+      setForm({
+        ...data,
+        evtStartDate: data.evtStartDate?.slice(0, 10), // asegúrate de tener formato correcto
+        evtEndDate: data.evtEndDate?.slice(0, 10),
+        evtStartTime: data.evtStartTime,
+        evtEndTime: data.evtEndTime,
+        evtDuration: data.duration_time,
+        evtTitle: data.title,
+        evtDescription: data.description,
+        evtAccessLink: data.access_link,
+        evtLocation: data.location,
+        evtCategory: data.category,
+        evtAllDay: data.all_day,
+        evtStatus: data.evt_status,
+      });
+    };
+
+    console.log("Se gatilló edición", form);
+    loadEvent();
+  }, [evt_Id]);
+
   // Validación de campos requeridos
   const canSave =
     form.evtTitle.trim() !== "" &&
@@ -183,7 +223,7 @@ OffCanvasProps) {
       {/* Sidebar desde la derecha */}
       {/* Off-canvas */}
       <aside
-        className={`fixed top-0 right-0 h-full w-80 bg-gray-700 text-gray-700 shadow-lg transform transition-transform ${
+        className={`fixed top-0 right-0 h-full w-[35vw] bg-gray-700 text-gray-700 shadow-lg transform transition-transform ${
           open ? "translate-x-0" : "translate-x-full"
         } p-6 z-50`}
       >
@@ -279,20 +319,6 @@ OffCanvasProps) {
               className="border rounded px-3 py-2 text-gray-700"
             />
           </div>
-          {/* 5. Ubicación */}
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-white">Ubicación</label>
-            <select
-              // value={location}
-              onChange={handleChange}
-              className="border rounded px-3 py-2"
-            >
-              <option value="">Sin categoría</option>
-              <option value="Reunión">Reunión</option>
-              <option value="Tarea">Tarea</option>
-              <option value="Recordatorio">Recordatorio</option>
-            </select>
-          </div>
 
           {/* 6. Categoría */}
           <div className="flex flex-col">
@@ -303,10 +329,48 @@ OffCanvasProps) {
               onChange={handleChange}
               className="border rounded px-3 py-2"
             >
-              <option value="">Sin categoría</option>
-              <option value="Reunión">Reunión</option>
-              <option value="Tarea">Tarea</option>
+              <option value="Reunión General">Reunión General</option>
+              <option value="Reunión General Redes">
+                Reunión General de Redes
+              </option>
+              <option value="Reunión Individual Redes">
+                Reunión Individual de Redes
+              </option>
+              <option value="Escuela de Liderazgo">Escuela de Liderazgo</option>
+              <option value="Trabajo Redes Coffee">Trabajo Redes Coffee</option>
+              <option value="Trabajo Redes Aseo">Trabajo Redes Aseo</option>
               <option value="Recordatorio">Recordatorio</option>
+            </select>
+          </div>
+
+          {/* 5. Ubicación */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-medium text-white">Ubicación</label>
+            <select
+              // value={location}
+              onChange={handleChange}
+              className="border rounded px-3 py-2"
+            >
+              <option value="Iver Central">Iver Central</option>
+              <option value="Iver Curicó">Iver Curicó</option>
+              <option value="Iver Nancagua">Iver Nancagua</option>
+              <option value="Iver Talcahuano">Iver Talcahuano</option>
+              <option value="Iver San Clemente">Iver San Clemente</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="mb-1 font-medium text-white">Responsable</label>
+            <select
+              // value={location}
+              onChange={handleChange}
+              className="border rounded px-3 py-2"
+            >
+              <option value="Iver Central">Mano 1</option>
+              <option value="Iver Curicó">Mano 2</option>
+              <option value="Iver Nancagua">Mano 3</option>
+              <option value="Iver Talcahuano">Mano 4</option>
+              <option value="Iver San Clemente">Mano 5</option>
             </select>
           </div>
 
@@ -325,7 +389,7 @@ OffCanvasProps) {
             <div className="grid grid-cols-2 gap-2 w-[100%]">
               <div>
                 <button
-                  type="submit"
+                  type="button"
                   className="mt-4 py-2 w-[100%] rounded text-white transition-colors bg-yellow-600 hover:bg-yellow-700"
                 >
                   Actualizar
@@ -333,8 +397,11 @@ OffCanvasProps) {
               </div>
               <div>
                 <button
-                  type="submit"
+                  type="button"
                   className="mt-4 py-2 w-[100%] rounded text-white transition-colors bg-red-600 hover:bg-red-700"
+                  onClick={() => {
+                    deleteEvent(evt_Id), setOpen(false);
+                  }}
                 >
                   Eliminar
                 </button>

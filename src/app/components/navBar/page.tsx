@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -61,7 +61,14 @@ export default function NavBar() {
       key: "calendario",
       current: false,
     },
+    {
+      name: "Formularios",
+      href: "/forms",
+      key: "forms",
+      current: false,
+    },
   ];
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const { user, loading } = useUserSession();
   if (loading) return null;
@@ -125,11 +132,11 @@ export default function NavBar() {
                             Finanzas
                           </MenuButton>
                         </div>
-                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md bg-white  ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                           <MenuItem>
                             <Link
                               href={item.href}
-                              className="block px-4 py-2 text-sm text-white bg-gray-700 hover:bg-gray-600 mb-1"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Dashboard
                             </Link>
@@ -137,7 +144,7 @@ export default function NavBar() {
                           <MenuItem>
                             <Link
                               href="/finanzas/reportes"
-                              className="block px-4 py-2 text-sm text-white bg-gray-700 hover:bg-gray-600 mb-1"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Reportes
                             </Link>
@@ -148,7 +155,7 @@ export default function NavBar() {
                             <MenuItem>
                               <Link
                                 href="/finanzas/settings"
-                                className="block px-4 py-2 text-sm text-white bg-gray-700 hover:bg-gray-800"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
                               >
                                 Mantenedor
                               </Link>
@@ -158,7 +165,47 @@ export default function NavBar() {
                       </Menu>
                     );
                   }
+                  if (item.key === "calendario") {
+                    return (
+                      <Menu as="div" key={item.key} className="relative">
+                        <div>
+                          <MenuButton
+                            className={classNames(
+                              isActive
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              "rounded-md px-3 py-2 text-sm font-medium"
+                            )}
+                          >
+                            Programación
+                          </MenuButton>
+                        </div>
+                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          <MenuItem>
+                            <Link
+                              href="/calendario"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Calendario
+                            </Link>
+                          </MenuItem>
 
+                          {user?.scopedBySede === true ? (
+                            []
+                          ) : (
+                            <MenuItem>
+                              <Link
+                                href="/calendar/settings"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
+                              >
+                                Mantenedor
+                              </Link>
+                            </MenuItem>
+                          )}
+                        </MenuItems>
+                      </Menu>
+                    );
+                  }
                   return (
                     <>
                       <Link

@@ -18,14 +18,8 @@ import {
   EventType,
   OffCanvasRightEventForm,
 } from "../OffCanva/OffCanvasRightEventForm";
-import { OffCanvasRightDateSelector } from "../OffCanva/OffCanvaRightDateSelector";
+import { OffCanvasRightTimeSelector } from "../OffCanva/OffCanvaRightTimeSelector";
 import { useCalendarEvents } from "./useCalendarEvents";
-
-interface CalendarEvent {
-  date: string; // ISO format: yyyy-MM-dd
-  title: string;
-  time?: string;
-}
 
 const hours = Array.from({ length: 28 }, (_, i) => {
   const totalMinutes = 8 * 60 + i * 30;
@@ -155,7 +149,7 @@ export default function MonthlyCalendar() {
           Semana
         </button>
       </div>
-      <OffCanvasRightDateSelector
+      <OffCanvasRightTimeSelector
         open={openTimeSelector}
         setOpen={setOpenTimeSelector}
         openEventForm={openEventForm}
@@ -218,12 +212,16 @@ export default function MonthlyCalendar() {
         days.push(
           <div
             key={day.toISOString()}
-            onClick={() => createNewEventTime(formattedDate, true)}
+            onClick={
+              isSameMonth(day, monthStart)
+                ? () => createNewEventTime(formattedDate, true)
+                : undefined
+            }
             className={`border border-gray-700 p-1 align-top text-left ${
               rows.length > 5 ? "h-28" : "h-28"
             } ${
               !isSameMonth(day, monthStart)
-                ? "bg-gray-300 text-gray-600"
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                 : "bg-gray-800 text-white cursor-pointer"
             }`}
           >
@@ -244,6 +242,7 @@ export default function MonthlyCalendar() {
                   onClick={(e) => {
                     e.stopPropagation(); // ← evita que suba al padre
                     createNewEvent(formattedDate, false);
+                    setEvtId(event.evtId);
                   }}
                 >
                   {event.evtStartTime && <span>{event.evtStartTime}</span>}{" "}
@@ -286,7 +285,7 @@ export default function MonthlyCalendar() {
               className="grid grid-cols-8 border border-gray-600 bg-gray-800"
             >
               {/* columna de la hora */}
-              <div className="p-2 text-xs text-white h-[100px]">
+              <div className="p-2 text-xs text-white h-[70px]">
                 {`${hour}:00`}
               </div>
 
@@ -317,7 +316,9 @@ export default function MonthlyCalendar() {
                   <div
                     key={i}
                     className="p-1 border-l border-gray-600 relative cursor-pointer bg-gray-800"
-                    onClick={() => createNewEvent(dateString, true)}
+                    onClick={() => {
+                      createNewEvent(dateString, true), setEvtId("");
+                    }}
                   >
                     {eventsAtHour.map((ev, idx) => (
                       <div

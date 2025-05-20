@@ -21,7 +21,7 @@ interface OffCanvasProps {
   // puedes añadir más props aquí
 }
 
-export function OffCanvasRightDateSelector({
+export function OffCanvasRightTimeSelector({
   open,
   setOpen,
   openEventForm,
@@ -33,6 +33,8 @@ export function OffCanvasRightDateSelector({
   // const [eventDate, setEventDate] = useState<string>(date || "");
   console.log(date);
   const [timeSelected, setTimeSelected] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const { events, loading } = useCalendarEvents(refresh);
 
   // console.log(eventDate);
 
@@ -62,7 +64,7 @@ export function OffCanvasRightDateSelector({
       {/* Sidebar desde la derecha */}
       {/* Off-canvas */}
       <aside
-        className={`fixed top-0 right-0 h-full bg-gray-700 text-gray-700 shadow-lg transform transition-transform ${
+        className={`fixed top-0 right-0 h-full w-[43vw] bg-gray-700 text-gray-700 shadow-lg transform transition-transform ${
           open ? "translate-x-0" : "translate-x-full"
         } p-6 z-40`}
       >
@@ -82,22 +84,40 @@ export function OffCanvasRightDateSelector({
           </div>
           <div className="h-[90vh]">
             <div className="h-[88vh] overflow-y-auto">
-              {hours.map((hour) => (
-                <div
-                  key={hour}
-                  className="grid grid-cols-8 border border-gray-600 bg-gray-800 cursor-pointer"
-                  onClick={() => {
-                    setTimeSelected(true),
-                      setTime(hour),
-                      setOpenEventForm(true);
-                  }}
-                >
-                  {/* columna de la hora */}
-                  <div className="p-2 text-xs text-white h-[50px] cursor-pointer">
-                    {`${hour}:00`}
+              {hours.map((hour) => {
+                const isOccupied = events.some(
+                  (evt) =>
+                    evt.evtStartDate === date && // comparar solo eventos del mismo día
+                    evt.evtStartTime?.slice(0, 5) === hour // comparar horas en formato HH:MM
+                );
+
+                return (
+                  <div
+                    key={hour}
+                    className={`grid grid-cols-8 border border-gray-600 ${
+                      isOccupied
+                        ? "bg-gray-500 cursor-not-allowed "
+                        : "bg-gray-800 cursor-pointer"
+                    }`}
+                    onClick={() => {
+                      if (!isOccupied) {
+                        setTimeSelected(true);
+                        setTime(hour);
+                        setOpenEventForm(true);
+                      }
+                    }}
+                  >
+                    <div className="p-2 text-xs text-white h-[50px] cursor-pointer">
+                      {hour}
+                    </div>
+                    {isOccupied && (
+                      <div className="col-span-7 text-xs text-white flex items-center">
+                        🛑 Ocupado
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
