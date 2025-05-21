@@ -25,20 +25,17 @@ type FiltrosFinanzas = {
   medioPago?: string;
 };
 
-export default function FinanzasForms() {
+type FinanzasTableProps = {
+  filtros: FiltrosFinanzas;
+};
+
+export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   const { user, loading } = useUserSession();
   // 1) refresh puede ser un contador o booleano para disparar recarga
   const [refresh, setRefresh] = useState(0);
   // 2) filtros según tu UI: aquí un ejemplo con fechas vacías
-  const [filtros, setFiltros] = useState<FiltrosFinanzas>({
-    dateView: "",
-    fechaDesde: undefined,
-    fechaHasta: undefined,
-    sedeId: undefined,
-    tipo: "",
-    estado: "",
-    medioPago: "",
-  });
+  const [filtrosState, setFiltrosState] = useState<FiltrosFinanzas>(filtros);
+
   const [searchValue, setSearchValue] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState("");
@@ -162,90 +159,80 @@ export default function FinanzasForms() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full table-auto text-sm text-gray-800">
+      <div>
+        <table className="w-full table-auto text-sm text-gray-800 border-collapse">
           <thead className="bg-gray-100 text-left">
             <tr>
-              {[
-                "Fecha",
-                "Tipo Mov.",
-                "Categoría del mov.",
-                "Clasificación del mov.",
-                "N. Documento",
-                "Medio de pago",
-                "Monto",
-                "Sede",
-                "Estado",
-              ].map((key) => (
-                <th
-                  key={key}
-                  className="p-2 cursor-pointer select-none"
-                  // onClick={() => handleSort(key as keyof Movimiento)}
-                >
-                  {key}
-                  {/* {orden.key === key && ( */}
-                  <span className="inline-block ml-1 w-3 h-3">
-                    {/* {orden.asc ? <ArrowUpIcon /> : <ArrowDownIcon />} */}
-                  </span>
-                  {/* )} */}
-                </th>
-              ))}
-              <th className="p-2 text-center">Acciones</th>
+              <th className="p-2 w-[8%]">Fecha</th>
+              <th className="p-2 w-[6%]">Tipo</th>
+              <th className="p-2 w-[13%]">Grupo</th>
+              <th className="p-2 w-[15%]">Tipo Mov.</th>
+              <th className="p-2 w-[8%]">N° Doc</th>
+              <th className="p-2 w-[10%]">Método de Pago</th>
+              <th className="p-2 w-[10%]">Monto</th>
+              <th className="p-2 w-[13%]">Sede</th>
+              <th className="p-2 w-[10%]">Estado</th>
+              <th className="p-2 w-[5%]">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {movimientosFiltrados.map((m) => (
-              <tr key={m.id} className="border-t">
-                <td className="p-2">{m.fecha}</td>
-                <td className="p-2">{m.tipo}</td>
-                <td className="p-2">{m.mov_grupo}</td>
-                <td className="p-2">{m.tipo_mov}</td>
-                <td className="p-2">{m.num_doc}</td>
-                <td className="p-2">{m.metodo_pago}</td>
-                <td className="p-2 cursor-pointer">
-                  {editId === m.id ? (
-                    <input
-                      type="number"
-                      value={editMonto}
-                      onChange={(e) => setEditMonto(Number(e.target.value))}
-                      onBlur={() => handleEditSubmit()}
-                      className="border rounded px-2 py-1 w-24"
-                    ></input>
-                  ) : (
-                    <>{`$${m.monto.toLocaleString()}`}</>
-                  )}
-                </td>
-                <td className="p-2">{m.sede}</td>
-                <td className="p-2">{m.estado}</td>
-                {allowedRoles.includes(user?.role_id ?? "") && (
-                  <td className="p-2 flex justify-evenly">
-                    {editId === m.id ? (
-                      <button
-                        onClick={handleEditSubmit}
-                        className="text-green-600 hover:underline"
-                      >
-                        <CheckIcon className="w-4 h-4 inline" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleEdit(m.id, m.monto)}
-                        className="text-blue-600 hover:underline"
-                      >
-                        <PencilIcon className="w-4 h-4 inline" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(m.id)}
-                      className="text-red-600 hover:underline"
-                    >
-                      <TrashIcon className="w-4 h-4 inline" />
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
         </table>
+
+        <div className="overflow-y-auto max-h-[60vh]">
+          <table className="table-auto w-full text-gray-800 text-sm border-collapse">
+            <tbody>
+              {movimientosFiltrados.map((m) => (
+                <tr key={m.id} className="border-t">
+                  <td className="p-2 w-[8%]">{m.fecha}</td>
+                  <td className="p-2 w-[6%]">{m.tipo}</td>
+                  <td className="p-2 w-[13%]">{m.mov_grupo}</td>
+                  <td className="p-2 w-[15%]">{m.tipo_mov}</td>
+                  <td className="p-2 w-[8%]">{m.num_doc}</td>
+                  <td className="p-2 w-[10%]">{m.metodo_pago}</td>
+                  <td className="p-2 w-[10%] cursor-pointer">
+                    {editId === m.id ? (
+                      <input
+                        type="number"
+                        value={editMonto}
+                        onChange={(e) => setEditMonto(Number(e.target.value))}
+                        onBlur={() => handleEditSubmit()}
+                        className="border rounded px-2 py-1 w-24"
+                      ></input>
+                    ) : (
+                      <>{`$${m.monto.toLocaleString()}`}</>
+                    )}
+                  </td>
+                  <td className="p-2 w-[13%]">{m.sede}</td>
+                  <td className="p-2 w-[10%]">{m.estado}</td>
+                  {allowedRoles.includes(user?.role_id ?? "") && (
+                    <td className="p-2 w-[5%] flex justify-evenly">
+                      {editId === m.id ? (
+                        <button
+                          onClick={handleEditSubmit}
+                          className="text-green-600 hover:underline"
+                        >
+                          <CheckIcon className="w-4 h-4 inline" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleEdit(m.id, m.monto)}
+                          className="text-blue-600 hover:underline"
+                        >
+                          <PencilIcon className="w-4 h-4 inline" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(m.id)}
+                        className="text-red-600 hover:underline"
+                      >
+                        <TrashIcon className="w-4 h-4 inline" />
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

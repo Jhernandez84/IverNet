@@ -107,10 +107,12 @@ export default function FinanzasForm({
   }, [companyId]);
 
   useEffect(() => {
-    if (user?.sede_id) {
+    if (user) {
+      const sedeIdValido =
+        user.sede_id?.trim() || "a64548cc-7515-415b-9df5-1404f55e3fca";
       setForm((prev) => ({
         ...prev,
-        sede_id: user.sede_id,
+        sede_id: sedeIdValido,
       }));
     }
   }, [user]);
@@ -128,6 +130,7 @@ export default function FinanzasForm({
       setTipoPrincMov(e.target.value);
       setForm({ ...form, tipo: e.target.value, tipo_mov: "" }); // Reset tipo_mov when tipo changes
     }
+    console.log("Datos del formulario", form);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
