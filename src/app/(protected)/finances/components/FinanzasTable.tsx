@@ -38,6 +38,7 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
 
   const [searchValue, setSearchValue] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showFormReport, setShowFormReport] = useState(false);
   const [editId, setEditId] = useState("");
   const [editMonto, setEditMonto] = useState(0);
 
@@ -92,6 +93,29 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
     }
   };
 
+  const cierraMes = async () => {
+    const currentDate = new Date();
+    const mes = currentDate.getMonth() + 1; // JS months start at 0
+    const anio = currentDate.getFullYear();
+
+    console.log(mes, anio);
+
+    const { data, error } = await supabase.rpc(
+      "confirmar_movimientos_por_mes_anio",
+      {
+        p_mes: mes,
+        p_anio: anio,
+      }
+    );
+
+    if (error) {
+      console.error("Error al confirmar movimientos:", error.message);
+    } else {
+      // alert("Estado de los movimientos cambiados para el ", mes & anio);
+      console.log(`Movimientos confirmados: ${data}`); // cantidad de filas actualizadas
+    }
+  };
+
   const movimientosFiltrados = movimientos.filter((m) =>
     Object.values(m).some((v) =>
       String(v).toLowerCase().includes(searchValue.toLowerCase())
@@ -134,14 +158,48 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
           </div>
         )}
 
+        {showFormReport && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+            <div className="bg-gray-700 rounded-lg shadow-lg w-full max-w-xl p-6 relative">
+              <button
+                onClick={() => setShowFormReport(false)}
+                className="absolute top-2 right-2 text-gray-200 hover:text-red-700 text-xl p-4"
+              >
+                ×
+              </button>
+
+              <h3 className="text-xl font-bold mb-4 text-white">
+                Generar cierre mensual
+              </h3>
+              <div className="grid grid-cols-2 text-gray-700">
+                <input type="month" name="mesAnio" />
+                <button
+                  onClick={() => cierraMes()}
+                  className="bg-yellow-600 text-white px-4 py-2 sm mr-4 rounded hover:bg-yellow-500"
+                >
+                  Generar proceso de cierre
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
           {allowedRoles.includes(user?.role_id ?? "") && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 sm:mr-4 rounded hover:bg-blue-700"
-            >
-              + Agregar movimiento
-            </button>
+            <>
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-blue-600 text-white px-4 py-2 sm:mr-4 rounded hover:bg-blue-700"
+              >
+                + Agregar movimiento
+              </button>
+              <button
+                onClick={() => setShowFormReport(true)}
+                className="bg-yellow-600 text-white px-4 py-2 sm mr-4 rounded hover:bg-yellow-700"
+              >
+                Generar cierre de mes
+              </button>
+            </>
           )}
           <button
             onClick={() => setRefresh(1)}
@@ -203,31 +261,32 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
                   </td>
                   <td className="p-2 w-[13%]">{m.sede}</td>
                   <td className="p-2 w-[10%]">{m.estado}</td>
-                  {allowedRoles.includes(user?.role_id ?? "") && (
-                    <td className="p-2 w-[5%] flex justify-evenly">
-                      {editId === m.id ? (
+                  {allowedRoles.includes(user?.role_id ?? "") &&
+                    m.estado === "Ingresado" && (
+                      <td className="p-2 w-[5%] flex justify-evenly">
+                        {editId === m.id ? (
+                          <button
+                            onClick={handleEditSubmit}
+                            className="text-green-600 hover:underline"
+                          >
+                            <CheckIcon className="w-4 h-4 inline" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEdit(m.id, m.monto)}
+                            className="text-blue-600 hover:underline"
+                          >
+                            <PencilIcon className="w-4 h-4 inline" />
+                          </button>
+                        )}
                         <button
-                          onClick={handleEditSubmit}
-                          className="text-green-600 hover:underline"
+                          onClick={() => handleDelete(m.id)}
+                          className="text-red-600 hover:underline"
                         >
-                          <CheckIcon className="w-4 h-4 inline" />
+                          <TrashIcon className="w-4 h-4 inline" />
                         </button>
-                      ) : (
-                        <button
-                          onClick={() => handleEdit(m.id, m.monto)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          <PencilIcon className="w-4 h-4 inline" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(m.id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        <TrashIcon className="w-4 h-4 inline" />
-                      </button>
-                    </td>
-                  )}
+                      </td>
+                    )}
                 </tr>
               ))}
             </tbody>

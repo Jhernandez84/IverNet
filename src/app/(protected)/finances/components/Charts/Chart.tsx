@@ -130,7 +130,7 @@ export default function ChartTable({ showData }: chartRender) {
                 },
                 plotOptions: {
                   bar: {
-                    horizontal: false,
+                    horizontal: true,
                     columnWidth: "40%",
                   },
                 },

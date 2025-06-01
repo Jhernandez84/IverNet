@@ -39,7 +39,7 @@ export default function NavBar() {
     },
     {
       name: "Finanzas",
-      href: "/finanzas",
+      href: "/finances",
       key: "finanzas",
       current: false,
     },
@@ -65,6 +65,12 @@ export default function NavBar() {
       name: "Formularios",
       href: "/forms",
       key: "forms",
+      current: false,
+    },
+    {
+      name: "Coffee",
+      href: "/coffee",
+      key: "coffee",
       current: false,
     },
   ];
@@ -143,7 +149,7 @@ export default function NavBar() {
                           </MenuItem>
                           <MenuItem>
                             <Link
-                              href="/finanzas/reportes"
+                              href="/finances/reports"
                               className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Reportes
@@ -154,7 +160,7 @@ export default function NavBar() {
                           ) : (
                             <MenuItem>
                               <Link
-                                href="/finanzas/settings"
+                                href="/finances/settings"
                                 className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
                               >
                                 Mantenedor
@@ -196,6 +202,47 @@ export default function NavBar() {
                             <MenuItem>
                               <Link
                                 href="/calendar/settings"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
+                              >
+                                Mantenedor
+                              </Link>
+                            </MenuItem>
+                          )}
+                        </MenuItems>
+                      </Menu>
+                    );
+                  }
+                  if (item.key === "leadership") {
+                    return (
+                      <Menu as="div" key={item.key} className="relative">
+                        <div>
+                          <MenuButton
+                            className={classNames(
+                              isActive
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              "rounded-md px-3 py-2 text-sm font-medium"
+                            )}
+                          >
+                            Liderazgo
+                          </MenuButton>
+                        </div>
+                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          <MenuItem>
+                            <Link
+                              href="/leadership"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Redes
+                            </Link>
+                          </MenuItem>
+
+                          {user?.scopedBySede === true ? (
+                            []
+                          ) : (
+                            <MenuItem>
+                              <Link
+                                href="/leadership/management"
                                 className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
                               >
                                 Mantenedor

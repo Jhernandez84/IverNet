@@ -74,13 +74,13 @@ export default function LoginPage() {
               className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
-          <Link
+          {/* <Link
             key="signup"
             href="/signup"
             className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
           >
             Crear Cuenta
-          </Link>
+          </Link> */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
