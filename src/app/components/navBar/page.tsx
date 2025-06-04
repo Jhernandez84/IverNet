@@ -7,6 +7,7 @@ import Image from "next/image";
 import { supabase } from "@/app/utils/supabaseClients";
 import { useRouter } from "next/navigation";
 import { useUserSession } from "@/hooks/useUserSession";
+import { OffCanvasRightNotifications } from "./NavBarOffCanva/OffCanvasRightNotifications";
 
 import {
   Disclosure,
@@ -75,6 +76,7 @@ export default function NavBar() {
     },
   ];
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [openAlerts, setOpenAlerts] = useState(false);
 
   const { user, loading } = useUserSession();
   if (loading) return null;
@@ -253,6 +255,78 @@ export default function NavBar() {
                       </Menu>
                     );
                   }
+                  if (item.key === "coffee") {
+                    return (
+                      <Menu as="div" key={item.key} className="relative">
+                        <div>
+                          <MenuButton
+                            className={classNames(
+                              isActive
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              "rounded-md px-3 py-2 text-sm font-medium"
+                            )}
+                          >
+                            Coffee
+                          </MenuButton>
+                        </div>
+                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          <MenuItem>
+                            <Link
+                              href="/coffee"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Punto de Venta
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/leadership"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Cocina
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/leadership"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Inventarios
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/leadership"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Mesón
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/leadership"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Reportes
+                            </Link>
+                          </MenuItem>
+                          {user?.scopedBySede === true ? (
+                            []
+                          ) : (
+                            <MenuItem>
+                              <Link
+                                href="/leadership/management"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
+                              >
+                                Mantenedor
+                              </Link>
+                            </MenuItem>
+                          )}
+                        </MenuItems>
+                      </Menu>
+                    );
+                  }
                   return (
                     <>
                       <Link
@@ -277,11 +351,54 @@ export default function NavBar() {
             <button
               type="button"
               className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
+              onClick={() => setOpenAlerts(true)}
             >
               <span className="absolute -inset-1.5" />
               <span className="sr-only">View notifications</span>
               <BellIcon aria-hidden="true" className="size-6" />
             </button>
+            {/* Notificación Dropdown */}
+            {/* <Menu as="div" className="relative ml-3">
+              <div>
+                <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
+                  <span className="absolute -inset-1.5" />
+                  <span className="sr-only">Open user menu</span>
+                  <BellIcon aria-hidden="true" className="size-6" />
+                </MenuButton>
+              </div>
+              <MenuItems
+                transition
+                className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+              >
+                <MenuItem>
+                  <Link
+                    key="myaccount"
+                    href="/myaccount"
+                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
+                  >
+                    Mi Cuenta
+                  </Link>
+                </MenuItem>
+                <MenuItem>
+                  <Link
+                    key="settings"
+                    href="settings"
+                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
+                  >
+                    Settings
+                  </Link>
+                </MenuItem>
+                <MenuItem>
+                  <a
+                    href="#"
+                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
+                    onClick={handleLogout}
+                  >
+                    Sign out
+                  </a>
+                </MenuItem>
+              </MenuItems>
+            </Menu> */}
 
             {/* Profile dropdown */}
             <Menu as="div" className="relative ml-3">
@@ -331,6 +448,11 @@ export default function NavBar() {
             </Menu>
           </div>
         </div>
+        <OffCanvasRightNotifications
+          open={openAlerts}
+          setOpen={setOpenAlerts}
+          crear={false}
+        />
       </div>
 
       <DisclosurePanel className="sm:hidden">
