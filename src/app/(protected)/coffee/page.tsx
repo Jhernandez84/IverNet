@@ -1,427 +1,96 @@
 "use client";
 // /pages/orders/ingreso.tsx
 
-import { useState, useEffect, ReactElement } from "react";
+import { useState, useEffect, ReactElement, JSX } from "react";
+import { fetchCategorias, fetchProducts } from "./helpers/supabaseQueries";
 import { supabase } from "@/app/utils/supabaseClients";
 import { OffCanvaRigthOrder } from "./OffCanvaMenu/OffCanvasOrderDetails";
-import {
-  FaCoffee,
-  FaUtensils,
-  FaSoap,
-  FaIceCream,
-  FaHamburger,
-  FaUtensilSpoon,
-  FaDrumstickBite,
-  FaGlassMartiniAlt,
-} from "react-icons/fa";
-import { IconType } from "react-icons";
-import { rootTaskDispose } from "next/dist/build/swc/generated-native";
+import { ProductGrid } from "./Components/ProductsGrid";
 
-type Product = {
+type Categoria = {
   id: string;
-  name: string;
-  category: string;
-  price: number;
+  nombre: string;
+  descripcion: string;
+  imagen_url: string | null;
 };
 
-type OrderItem = {
-  productId: string;
-  quantity: number;
-  notes?: string;
+type Producto = {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  imagen_url: string | null;
+  stock: number;
+  unidad_medida: string;
 };
 
-export default function IngresoPedido() {
-  const [productos, setProductos] = useState<Product[]>([]);
-  const [selectedItems, setSelectedItems] = useState<OrderItem[]>([]);
-  const [cliente, setCliente] = useState<string>("Anónimo");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+export default function POSpage() {
   const [openMenu, setOpenMenu] = useState(false);
 
-  type Category = {
-    id: string;
-    title: string;
-    subtitle: string;
-    icon?: IconType;
-  };
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [allProducts, setAllProducts] = useState<Producto[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [cantidades, setCantidades] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState({
+    cats: true,
+    prods: true,
+    saving: false,
+  });
 
-  const categories: Category[] = [
-    {
-      id: "breakfast",
-      title: "Breakfast",
-      subtitle: "12 Menú In Stock",
-      icon: FaCoffee,
-    },
-    {
-      id: "lunch",
-      title: "Lunch",
-      subtitle: "12 Menú In Stock",
-      icon: FaUtensils,
-    },
-    {
-      id: "dinner",
-      title: "Dinner",
-      subtitle: "12 Menú In Stock",
-      icon: FaUtensils,
-    },
-    {
-      id: "soup",
-      title: "Soup",
-      subtitle: "12 Menú In Stock",
-      icon: FaSoap,
-    },
-    {
-      id: "breakfast",
-      title: "Breakfast",
-      subtitle: "12 Menú In Stock",
-      icon: FaCoffee,
-    },
-    {
-      id: "lunch",
-      title: "Lunch",
-      subtitle: "12 Menú In Stock",
-      icon: FaUtensils,
-    },
-    {
-      id: "dinner",
-      title: "Dinner",
-      subtitle: "12 Menú In Stock",
-      icon: FaUtensils,
-    },
-    {
-      id: "soup",
-      title: "Soup",
-      subtitle: "12 Menú In Stock",
-      icon: FaSoap,
-    },
-    {
-      id: "breakfast",
-      title: "Breakfast",
-      subtitle: "12 Menú In Stock",
-      icon: FaCoffee,
-    },
-    {
-      id: "lunch",
-      title: "Lunch",
-      subtitle: "12 Menú In Stock",
-      icon: FaUtensils,
-    },
-    {
-      id: "dinner",
-      title: "Dinner",
-      subtitle: "12 Menú In Stock",
-      icon: FaUtensils,
-    },
-    {
-      id: "soup",
-      title: "Soup",
-      subtitle: "12 Menú In Stock",
-      icon: FaSoap,
-    },
-  ];
+  // 1. Al montar, cargar categorías
 
-  // 1. Cargar lista de productos desde Supabase
   useEffect(() => {
-    async function fetchProducts() {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("category", { ascending: true });
-      if (error) {
-        console.error("Error cargando productos:", error.message);
+    let mounted = true;
+
+    async function loadCategorias() {
+      const storedCats = localStorage.getItem("pos_categorias");
+      if (storedCats) {
+        const parsed: Categoria[] = JSON.parse(storedCats);
+        if (mounted) {
+          setCategorias(parsed);
+          if (parsed.length > 0) {
+            setSelectedCategory(parsed[0].id);
+          }
+          setLoading((s) => ({ ...s, cats: false }));
+        }
       } else {
-        setProductos(data || []);
+        const fetchedCats = await fetchCategorias();
+        if (mounted) {
+          setCategorias(fetchedCats);
+          if (fetchedCats.length > 0) {
+            setSelectedCategory(fetchedCats[0].id);
+          }
+          localStorage.setItem("pos_categorias", JSON.stringify(fetchedCats));
+          setLoading((s) => ({ ...s, cats: false }));
+        }
       }
     }
-    fetchProducts();
+
+    async function loadProducts() {
+      const storedProds = localStorage.getItem("pos_productos");
+      if (storedProds) {
+        const parsed: Producto[] = JSON.parse(storedProds);
+        if (mounted) {
+          setAllProducts(parsed);
+          setLoading((s) => ({ ...s, prods: false }));
+        }
+      } else {
+        const fetchedProds = await fetchProducts();
+        if (mounted) {
+          setAllProducts(fetchedProds);
+          localStorage.setItem("pos_productos", JSON.stringify(fetchedProds));
+          setLoading((s) => ({ ...s, prods: false }));
+        }
+      }
+    }
+
+    loadCategorias();
+    loadProducts();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
-
-  // 2. Función para agregar un ítem al pedido
-  const agregarItem = (productId: string) => {
-    // Si ya existe, aumentar cantidad; si no, insertar
-    setSelectedItems((prev) => {
-      const idx = prev.findIndex((item) => item.productId === productId);
-      if (idx !== -1) {
-        const copia = [...prev];
-        copia[idx].quantity += 1;
-        return copia;
-      }
-      return [...prev, { productId, quantity: 1 }];
-    });
-  };
-
-  // 3. Función para quitar ítem o disminuir cantidad
-  const quitarItem = (productId: string) => {
-    setSelectedItems((prev) => {
-      const idx = prev.findIndex((item) => item.productId === productId);
-      if (idx === -1) return prev;
-      const copia = [...prev];
-      if (copia[idx].quantity > 1) {
-        copia[idx].quantity -= 1;
-        return copia;
-      }
-      // Si solo 1, eliminar completamente
-      return copia.filter((item) => item.productId !== productId);
-    });
-  };
-
-  // 4. Enviar pedido a Supabase
-  const handleSubmit = async () => {
-    if (selectedItems.length === 0) {
-      setErrorMsg("Agrega al menos un producto al pedido.");
-      return;
-    }
-    setIsSubmitting(true);
-    setErrorMsg(null);
-
-    // 4.1 Insertar en tabla `orders`
-    const { data: orderData, error: orderError } = await supabase
-      .from("orders")
-      .insert([{ cliente, status: "Pendiente", created_at: new Date() }])
-      .single();
-
-    if (orderError || !orderData) {
-      setErrorMsg("Error creando el pedido. Inténtalo de nuevo.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // 4.2 Insertar en `order_items` cada ítem asociado al pedido
-    const orderItemsPayload = selectedItems.map((it) => ({
-      order_id: orderData,
-      product_id: it.productId,
-      quantity: it.quantity,
-      notes: it.notes || "",
-    }));
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItemsPayload);
-    if (itemsError) {
-      setErrorMsg("Error añadiendo ítems al pedido.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // 4.3 Resetear formulario
-    setSelectedItems([]);
-    setCliente("Anónimo");
-    setIsSubmitting(false);
-    alert("Pedido creado con éxito. ID: " + orderData);
-  };
-  const [selected, setSelected] = useState(false);
-
-  const productosTest = [
-    {
-      id: "1",
-      name: "Mentitas",
-      category: "Mentitas verdes",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "Mentitas",
-      category: "Mentitas verdes",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "Mentitas",
-      category: "Mentitas verdes",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "Mentitas",
-      category: "Mentitas verdes",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "Mentitas",
-      category: "Mentitas verdes",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 350,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-    {
-      id: "1",
-      name: "p1",
-      category: "p2",
-      price: 1,
-    },
-  ];
 
   // 5. Renderizado
   return (
@@ -433,24 +102,18 @@ export default function IngresoPedido() {
         <div className="grid grid-rows-[15%_85%] h-[93vh] w-full bg-gray-700">
           <div className="grid grid-cols-[90%_10%] h-[70px] pt-4">
             <div className="grid grid-cols-8 overflow-y-auto gap-4 pl-6 p-2 h-[120px]">
-              {categories.map((cat) => {
-                return (
-                  <div
+              {/* {loading.cats ? (
+                <p>Cargando productos</p>
+              ) : (
+                categorias.map((cat) => (
+                  <CategoryList
                     key={cat.id}
-                    className={`w-[120px] items-center px-2 rounded-lg cursor-pointer ${
-                      selected
-                        ? "bg-blue-500 text-white"
-                        : "bg-white text-gray-700 border border-gray-200"
-                    }`}
-                  >
-                    {/* <Icon /> */}
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{cat.title}</span>
-                      <span className="text-xs">{cat.subtitle}</span>
-                    </div>
-                  </div>
-                );
-              })}
+                    categoria={cat}
+                    isSelected={cat.id === selectedCategory}
+                    onSelect={setSelectedCategory}
+                  />
+                ))
+              )} */}
             </div>
             <div className="rounded-lg p-2">
               <button
@@ -478,9 +141,21 @@ export default function IngresoPedido() {
           </div>
 
           <div className="w-full h-[95%] p-2">
-            <p className="pl-6">Productos disponibles (números de )</p>
+            {/* <p className="pl-6">Productos disponibles (números de )</p> */}
+            <h2 className="text-lg font-semibold mb-2">
+              {selectedCategory
+                ? `Productos en “${
+                    categorias.find((c) => c.id === selectedCategory)?.nombre
+                  }”`
+                : "Selecciona una categoría"}
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-[100%] overflow-y-auto">
-              {productosTest.map((prod) => (
+              {loading.prods ? (
+                <p>Cargando productos...</p>
+              ) : length === 0 ? (
+                <p>No hay productos en esta categoría</p>
+              ) : (
+                // productos.map((prod) => (
                 <>
                   <div className="h-full p-4 bg-gray-700">
                     <div className="bg-white rounded-lg shadow flex overflow-hidden">
@@ -494,15 +169,15 @@ export default function IngresoPedido() {
                       <div className="flex flex-1 flex-col justify-between p-2">
                         <div>
                           <span className="text-sm font-medium text-gray-800">
-                            {prod.name}
+                            {/* {prod.nombre} */}
                           </span>
                           <p className="text-xs text-gray-500">
-                            {prod.category}
+                            {/* {prod.descripcion} */}
                           </p>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-semibold text-gray-900">
-                            ${prod.price}
+                            {/* ${prod.precio} */}
                           </span>
                           <div className="flex items-center border border-gray-900 rounded-lg overflow-hidden">
                             <button
@@ -511,7 +186,9 @@ export default function IngresoPedido() {
                             >
                               −
                             </button>
-                            <span className="px-2 text-sm text-gray-900">0</span>
+                            <span className="px-2 text-sm text-gray-900">
+                              0
+                            </span>
                             <button
                               // onClick={onIncrement}
                               className="px-2 bg-gray-900 hover:bg-gray-800"
@@ -524,7 +201,8 @@ export default function IngresoPedido() {
                     </div>
                   </div>
                 </>
-              ))}
+                // ))
+              )}
             </div>
           </div>
         </div>

@@ -84,6 +84,6 @@ export default function useFinanzas({ refresh, filtros }: Props) {
   }, [orden, refresh, filtros, loading, user]);
 
   if (loading || !user) return null;
-  // console.log(movimientos);
+  console.log('Movimientos del periodo',movimientos);
   return { movimientos, loadingFinanceData };
 }

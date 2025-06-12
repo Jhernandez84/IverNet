@@ -1,4 +1,5 @@
 import type { Metadata } from "../../node_modules/next/types";
+import { FiltersFinanceProvider } from "./(protected)/finances/context/financeContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,9 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`antialiased`}>
-        {children}
-      </body>
+      <FiltersFinanceProvider>
+        <body className={`antialiased`}>{children}</body>
+      </FiltersFinanceProvider>
     </html>
   );
 }

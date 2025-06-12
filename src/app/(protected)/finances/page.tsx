@@ -6,6 +6,8 @@ import FinanzasTable from "./components/FinanzasTable";
 import { useUserSession } from "@/hooks/useUserSession";
 import ChartTable from "./components/Charts/Chart";
 import ResumenFinancieroPorSede from "./components/Charts/ChartSummary";
+import MonthlyReport from "./components/monthlyReport";
+
 import PieChart from "./components/Charts/PieChart";
 import { CogIcon, DocumentIcon } from "@heroicons/react/24/solid";
 
@@ -18,7 +20,7 @@ export default function FinanzasDashboard() {
   if (loading || !user) return <p className="p-4">Cargando...</p>;
 
   return (
-    <div className="p-2 space-y-2 h-[80vh]">
+    <div className="p-2 space-y-2 h-[100%] bg-gray-900">
       <div className="bg-gray-800 shadow rounded">
         <select
           name=""
@@ -138,7 +140,8 @@ export default function FinanzasDashboard() {
           </div>
           <div className="h-[90%]">
             {/* <ResumenFinancieroPorSede showData={false} /> */}
-            <PieChart showData={false} />
+            <MonthlyReport />
+            {/* <PieChart showData={false} /> */}
           </div>
         </div>
       </div>
