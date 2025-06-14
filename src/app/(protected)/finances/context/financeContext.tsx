@@ -10,12 +10,14 @@ import React, {
 } from "react";
 
 import {
-  format,
-  startOfMonth,
+  startOfDay,
   startOfWeek,
+  startOfMonth,
   startOfYear,
+  format,
+  subMonths,
   endOfMonth,
-  endOfWeek,
+  endOfYear,
 } from "date-fns";
 
 // types.ts
@@ -32,15 +34,58 @@ export type Filters = {
 
 const STORAGE_KEY = "finance_filters";
 
-type FiltersContextType = {
-  filters: Filters;
-  setFilters: (updater: (prev: Filters) => Filters) => void;
-};
+export function getDateRangeByPeriod(period: string): {
+  filterStartDate: string;
+  filterEndDate: string;
+} {
+  const today = new Date();
+
+  let start = today;
+  let end = today;
+  switch (period) {
+    case "dia":
+      start = startOfDay(today);
+      end = startOfDay(today);
+      break;
+    case "semana":
+      start = startOfWeek(today, { weekStartsOn: 1 }); // lunes
+      end = startOfDay(today);
+      break;
+    case "mes":
+      start = startOfMonth(today);
+      end = today;
+      break;
+    case "ultmes":
+      start = startOfMonth(subMonths(new Date(), 1));
+      end = endOfMonth(subMonths(new Date(), 1));
+      break;
+    case "anio":
+      start = startOfYear(today);
+      end = today;
+      break;
+    case "custom":
+      start = startOfDay(today);
+      end = startOfDay(today);
+      break;
+    default:
+      return {
+        filterStartDate: "",
+        filterEndDate: "",
+      };
+  }
+
+  return {
+    filterStartDate: format(start, "yyyy-MM-dd"),
+    filterEndDate: format(end, "yyyy-MM-dd"),
+  };
+}
+
+const { filterStartDate, filterEndDate } = getDateRangeByPeriod("mes");
 
 const defaultFilters: Filters = {
-  filterPeriod: null,
-  filterStartDate: null,
-  filterEndDate: null,
+  filterPeriod: "mes",
+  filterStartDate,
+  filterEndDate,
   filterMovement: null,
   filterClass: null,
   filterMovStatus: null,
@@ -48,11 +93,33 @@ const defaultFilters: Filters = {
   filterBranch: null,
 };
 
+type FiltersContextType = {
+  filters: Filters;
+  setFilters: (updater: (prev: Filters) => Filters) => void;
+};
+
 const FiltersContext = createContext<FiltersContextType | undefined>(undefined);
 
 export function FiltersFinanceProvider({ children }: { children: ReactNode }) {
   const [filters, setFiltersState] = useState<Filters>(defaultFilters);
 
+  useEffect(() => {
+    if (
+      filters.filterPeriod &&
+      ["dia", "semana", "mes", "ultmes", "anio", "custom"].includes(
+        filters.filterPeriod
+      )
+    ) {
+      const { filterStartDate, filterEndDate } = getDateRangeByPeriod(
+        filters.filterPeriod
+      );
+      setFiltersState((prev) => ({
+        ...prev,
+        filterStartDate,
+        filterEndDate,
+      }));
+    }
+  }, [filters.filterPeriod]);
   // 1. Al montar, hidratar desde localStorage
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);

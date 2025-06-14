@@ -7,6 +7,7 @@ import { useUserSession } from "@/hooks/useUserSession";
 import ChartTable from "./components/Charts/Chart";
 import ResumenFinancieroPorSede from "./components/Charts/ChartSummary";
 import MonthlyReport from "./components/monthlyReport";
+import FinanceFilters from "./components/FinanceFilters";
 
 import PieChart from "./components/Charts/PieChart";
 import { CogIcon, DocumentIcon } from "@heroicons/react/24/solid";
@@ -21,105 +22,8 @@ export default function FinanzasDashboard() {
 
   return (
     <div className="p-2 space-y-2 h-[100%] bg-gray-900">
-      <div className="bg-gray-800 shadow rounded">
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="">Este mes</option>
-          <option value="">Esta semana</option>
-          <option value="">Este año</option>
-          <option value="">Rango de fecha</option>
-          <option value="">Hoy</option>
-        </select>
-        <input
-          type="date"
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        />
-        <input
-          type="date"
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        />
+      <FinanceFilters />
 
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="" selected>
-            Tipo movimiento
-          </option>
-          <option value="">Ingresos</option>
-          <option value="">Egresos</option>
-          <option value="">Traspasos</option>
-        </select>
-
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="" selected>
-            Clasificación
-          </option>
-          <option value="">Ingresos</option>
-          <option value="">Egresos</option>
-          <option value="">Traspasos</option>
-        </select>
-
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="" selected>
-            Estado del movimiento
-          </option>
-          <option value="">Ingresado</option>
-          <option value="">En Revisión</option>
-          <option value="">Confirmado</option>
-        </select>
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="" selected>
-            Medio de pago
-          </option>
-          <option value="">Efectivo</option>
-          <option value="">Tranferencia</option>
-          <option value="">Cosa</option>
-        </select>
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="" selected>
-            Sede
-          </option>
-          <option value="">Sede 1</option>
-          <option value="">Sede 2</option>
-          <option value="">Sede 3</option>
-        </select>
-        <select
-          name=""
-          id=""
-          className="rounded bg-gray-900 text-sm text-white m-2 border-none"
-        >
-          <option value="" selected>
-            Opciones
-          </option>
-          <option value="">
-            <DocumentIcon aria-hidden="true" className="size-6" /> Reportes
-          </option>
-          <option value="">
-            <CogIcon aria-hidden="true" className="size-6" />
-          </option>
-        </select>
-      </div>
       <div className="grid grid-cols-[40%_60%] gap-2">
         <div className="grid grid-rows-[40%_60%] h-[82vh] gap-2">
           <div className="bg-gray-800 shadow rounded p-2">

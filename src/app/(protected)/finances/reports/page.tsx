@@ -15,6 +15,8 @@ import { supabase } from "@/app/utils/supabaseClients";
 import { useEffect, useState } from "react";
 import FinanzasTable from "../components/FinanzasTable";
 
+import FinanceFilters from "../components/FinanceFilters";
+
 export default function ReportesFinancieros() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -109,11 +111,8 @@ export default function ReportesFinancieros() {
   // user?.access.map((ac) => console.log(access));
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Reportes Financieros</h1>
-
-      {/* Filtros */}
-
+    <div className="p-2 bg-gray-900 h-[90vh]">
+      {/* <FinanceFilters /> */}
       <div
         className={`grid gap-2 ${
           !user?.scopedBySede

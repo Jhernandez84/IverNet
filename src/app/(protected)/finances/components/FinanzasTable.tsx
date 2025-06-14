@@ -9,7 +9,7 @@ import {
   ArrowDownIcon,
   PencilIcon,
   TrashIcon,
-  CircleStackIcon,
+  DocumentChartBarIcon,
   CheckIcon,
 } from "@heroicons/react/24/solid";
 
@@ -42,6 +42,15 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   const [editId, setEditId] = useState("");
   const [editMonto, setEditMonto] = useState(0);
 
+  const [mes, setMes] = useState<number | null>(null);
+  const [anio, setAnio] = useState<number | null>(null);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    setMes(currentDate.getMonth() + 1); // JS months start at 0
+    setAnio(currentDate.getFullYear());
+  }, []);
+
   // Llamas al hook pasándole lo anterior
   const resultado = useFinanzas({ refresh, setRefresh, filtros });
 
@@ -57,6 +66,16 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   //     prev.key === key ? { ...prev, asc: !prev.asc } : { key, asc: true }
   //   );
   // };
+
+  const handleChangeMesAnio = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value; // formato: "2025-06"
+    if (value) {
+      const [year, month] = value.split("-");
+      setAnio(Number(year));
+      setMes(Number(month));
+    }
+    console.log(mes, anio);
+  };
 
   const handleDelete = async (id: string) => {
     const confirm = window.confirm(
@@ -94,25 +113,20 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   };
 
   const cierraMes = async () => {
-    const currentDate = new Date();
-    const mes = currentDate.getMonth() + 1; // JS months start at 0
-    const anio = currentDate.getFullYear();
-
-    console.log(mes, anio);
-
-    const { data, error } = await supabase.rpc(
-      "confirmar_movimientos_por_mes_anio",
-      {
-        p_mes: mes,
-        p_anio: anio,
-      }
-    );
+    const { data, error } = await supabase.rpc("confirmar_movimientos_mes", {
+      p_mes: mes,
+      p_anio: anio,
+      p_company_id: user.company_id,
+      p_sede_id: user.sede_id,
+    });
 
     if (error) {
       console.error("Error al confirmar movimientos:", error.message);
     } else {
       // alert("Estado de los movimientos cambiados para el ", mes & anio);
       console.log(`Movimientos confirmados: ${data}`); // cantidad de filas actualizadas
+      setShowFormReport(false);
+      setRefresh((prev) => prev + 1);
     }
   };
 
@@ -128,9 +142,9 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   ];
 
   return (
-    <div className="bg-white rounded shadow p-4">
+    <div className="bg-gray-800 rounded shadow p-4">
       <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-lg font-bold text-gray-800">
+        <h2 className="text-lg font-bold text-white">
           Movimientos Financieros
         </h2>
         {showForm && (
@@ -172,7 +186,15 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
                 Generar cierre mensual
               </h3>
               <div className="grid grid-cols-2 text-gray-700">
-                <input type="month" name="mesAnio" />
+                <input
+                  type="month"
+                  name="mesAnio"
+                  value={`${anio?.toString() || ""}-${
+                    mes?.toString().padStart(2, "0") || ""
+                  }`}
+                  onChange={handleChangeMesAnio}
+                  className="border p-2 rounded"
+                />
                 <button
                   onClick={() => cierraMes()}
                   className="bg-yellow-600 text-white px-4 py-2 sm mr-4 rounded hover:bg-yellow-500"
@@ -189,21 +211,21 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
             <>
               <button
                 onClick={() => setShowForm(true)}
-                className="bg-blue-600 text-white px-4 py-2 sm:mr-4 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white text-sm px-4 py-2 sm:mr-4 rounded hover:bg-blue-700"
               >
                 + Agregar movimiento
               </button>
               <button
                 onClick={() => setShowFormReport(true)}
-                className="bg-yellow-600 text-white px-4 py-2 sm mr-4 rounded hover:bg-yellow-700"
+                className="bg-yellow-600 text-white text-sm px-4 py-2 sm mr-4 rounded hover:bg-yellow-700"
               >
                 Generar cierre de mes
               </button>
             </>
           )}
           <button
-            onClick={() => setRefresh(1)}
-            className="bg-green-600 text-white px-4 py-2 sm mr-4 rounded hover:bg-green-700"
+            onClick={() => setRefresh((prev) => prev + 1)}
+            className="bg-green-600 text-white text-sm px-4 py-2 sm mr-4 rounded hover:bg-green-700"
           >
             Actualizar
           </button>
@@ -219,7 +241,7 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
 
       <div>
         <table className="w-full table-auto text-sm text-gray-800 border-collapse">
-          <thead className="bg-gray-100 text-left">
+          <thead className="bg-gray-900 text-left text-white">
             <tr>
               <th className="p-2 w-[8%]">Fecha</th>
               <th className="p-2 w-[6%]">Tipo</th>
@@ -230,7 +252,7 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
               <th className="p-2 w-[10%]">Monto</th>
               <th className="p-2 w-[13%]">Sede</th>
               <th className="p-2 w-[10%]">Estado</th>
-              <th className="p-2 w-[5%]">Acciones</th>
+              <th className="p-2 w-[12%] text-center">Acciones</th>
             </tr>
           </thead>
         </table>
@@ -239,14 +261,14 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
           <table className="table-auto w-full text-gray-800 text-sm border-collapse">
             <tbody>
               {movimientosFiltrados.map((m) => (
-                <tr key={m.id} className="border-t">
+                <tr key={m.id} className="border-t p-2 text-white">
                   <td className="p-2 w-[8%]">{m.fecha}</td>
-                  <td className="p-2 w-[6%]">{m.tipo}</td>
-                  <td className="p-2 w-[13%]">{m.mov_grupo}</td>
-                  <td className="p-2 w-[15%]">{m.tipo_mov}</td>
-                  <td className="p-2 w-[8%]">{m.num_doc}</td>
-                  <td className="p-2 w-[10%]">{m.metodo_pago}</td>
-                  <td className="p-2 w-[10%] cursor-pointer">
+                  <td className="w-[6%]">{m.tipo}</td>
+                  <td className="w-[13%]">{m.mov_grupo}</td>
+                  <td className="w-[15%]">{m.tipo_mov}</td>
+                  <td className="w-[8%]">{m.num_doc}</td>
+                  <td className="w-[10%]">{m.metodo_pago}</td>
+                  <td className="w-[10%] cursor-pointer">
                     {editId === m.id ? (
                       <input
                         type="number"
@@ -259,34 +281,42 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
                       <>{`$${m.monto.toLocaleString()}`}</>
                     )}
                   </td>
-                  <td className="p-2 w-[13%]">{m.sede}</td>
-                  <td className="p-2 w-[10%]">{m.estado}</td>
-                  {allowedRoles.includes(user?.role_id ?? "") &&
-                    m.estado === "Ingresado" && (
-                      <td className="p-2 w-[5%] flex justify-evenly">
-                        {editId === m.id ? (
+                  <td className="w-[13%]">{m.sede}</td>
+                  <td className="w-[10%]">{m.estado}</td>
+                  <td className="w-[12%]">
+                    <div className="flex justify-evenly items-center">
+                      {allowedRoles.includes(user?.role_id ?? "") &&
+                      m.estado === "Ingresado" ? (
+                        <>
+                          {editId === m.id ? (
+                            <button
+                              onClick={handleEditSubmit}
+                              className="text-green-600 hover:underline"
+                            >
+                              <CheckIcon className="w-4 h-4 inline" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEdit(m.id, m.monto)}
+                              className="text-blue-600 hover:underline"
+                            >
+                              <PencilIcon className="w-4 h-4 inline" />
+                            </button>
+                          )}
                           <button
-                            onClick={handleEditSubmit}
-                            className="text-green-600 hover:underline"
+                            onClick={() => handleDelete(m.id)}
+                            className="text-red-600 hover:underline"
                           >
-                            <CheckIcon className="w-4 h-4 inline" />
+                            <TrashIcon className="w-4 h-4 inline" />
                           </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEdit(m.id, m.monto)}
-                            className="text-blue-600 hover:underline"
-                          >
-                            <PencilIcon className="w-4 h-4 inline" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(m.id)}
-                          className="text-red-600 hover:underline"
-                        >
-                          <TrashIcon className="w-4 h-4 inline" />
-                        </button>
-                      </td>
-                    )}
+                        </>
+                      ) : (
+                        <p className="text-center text-sm text-gray-500 italic">
+                          No aplica
+                        </p>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
