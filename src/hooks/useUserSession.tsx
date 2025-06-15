@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import { supabase } from "@/app/utils/supabaseClients";
 
 type UserSession = {
@@ -15,13 +15,34 @@ type UserSession = {
   scopedBySede: boolean;
 };
 
-export function useUserSession() {
+type SessionContextType = {
+  user: UserSession | null;
+  loading: boolean;
+};
+
+const UserSessionContext = createContext<SessionContextType>({
+  user: null,
+  loading: true,
+});
+
+export const useUserSession = () => useContext(UserSessionContext);
+
+export const UserSessionProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSession = async () => {
-      setLoading(true);
+      const cached = localStorage.getItem("user_session");
+      if (cached) {
+        setUser(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
 
       const {
         data: { user: authUser },
@@ -36,9 +57,7 @@ export function useUserSession() {
 
       const { data: profile, error: profileError } = await supabase
         .from("users")
-        .select(
-          "id, full_name, email, role, role_id, company_id, sede_id, sedes(nombre)"
-        )
+        .select("id, full_name, email, role, role_id, company_id, sede_id")
         .eq("id", authUser.id)
         .single();
 
@@ -49,27 +68,15 @@ export function useUserSession() {
         return;
       }
 
-      const { data: accessData, error: accessError } = await supabase
+      const { data: accessData } = await supabase
         .from("user_access")
         .select("menu_items(key)")
         .eq("user_id", profile.id);
 
-      if (accessError) {
-        console.error("Error al obtener accesos:", accessError);
-      }
-
-      const { data: sedesAccess, error: sedesError } = await supabase
-        .from("sedes")
-        .select("id,nombre")
-        .eq("company_id", profile.company_id);
-
-      if (sedesError) {
-        console.error("Error al obtener accesos:", sedesError);
-      }
       const access = accessData?.map((item: any) => item.menu_items?.key) || [];
+      const scopedBySede = profile.role !== "Admin" && !!profile.sede_id;
 
-      const scopedBySede = profile.role != "Admin" && !!profile.sede_id;
-      setUser({
+      const fullUser: UserSession = {
         id: profile.id,
         full_name: profile.full_name,
         email: profile.email,
@@ -79,12 +86,19 @@ export function useUserSession() {
         sede_id: profile.sede_id,
         access,
         scopedBySede,
-      });
+      };
+
+      localStorage.setItem("user_session", JSON.stringify(fullUser));
+      setUser(fullUser);
       setLoading(false);
     };
 
     fetchSession();
   }, []);
-  // console.log(user);
-  return { user, loading };
-}
+
+  return (
+    <UserSessionContext.Provider value={{ user, loading }}>
+      {children}
+    </UserSessionContext.Provider>
+  );
+};
