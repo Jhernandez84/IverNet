@@ -55,14 +55,14 @@ export default function FinanceFilters() {
         .eq("company_id", user?.company_id)
         .order("tipo_mov_generico", { ascending: true });
       if (error) {
-        console.error("Error al cargar sedes:", error.message);
+        console.error("Error al cargar movimientos:", error.message);
         setErrorMovimientos(error.message);
         return;
       }
       console.log("Sedes cargadas:", movimientos);
       setMovimientos(data || []);
     } catch (err: any) {
-      console.error("Error inesperado al cargar sedes:", err.message);
+      console.error("Error inesperado al cargar movimientos:", err.message);
       setErrorMovimientos(err.message);
     } finally {
       setLoadMovimientos(false);
@@ -80,10 +80,9 @@ export default function FinanceFilters() {
         value={filters.filterPeriod ?? ""}
         onChange={(e) => handleChange("filterPeriod", e.target.value)}
         className="rounded bg-gray-900 text-sm text-white m-2 border-none"
+        defaultValue="dia"
       >
-        <option value="dia" selected>
-          Hoy
-        </option>
+        <option value="dia">Hoy</option>
         <option value="semana">Esta semana</option>
         <option value="mes">Este mes</option>
         <option value="ultmes">Mes anterior</option>
@@ -111,22 +110,22 @@ export default function FinanceFilters() {
         className="rounded bg-gray-900 text-sm text-white m-2 border-none"
       >
         <option value="">Tipo movimiento</option>
-        <option value="ingreso">Ingresos</option>
-        <option value="egreso">Egresos</option>
-        <option value="traspaso">Traspasos</option>
+        <option value="Ingreso">Ingresos</option>
+        <option value="Egreso">Egresos</option>
+        <option value="Traspaso">Traspasos</option>
       </select>
 
       <select
         name=""
         id=""
+        value={filters.filterClass ?? ""}
+        onChange={(e) => handleChange("filterClass", e.target.value)}
         className="rounded bg-gray-900 text-sm text-white m-2 border-none"
       >
-        <option value="" selected>
-          Clasificación
-        </option>
+        <option value="">Clasificación</option>
         {movimientos.map((mov) => (
           <option key={mov.id} value={mov.tipo_mov_generico}>
-            {mov.tipo_mov_generico}
+            {mov.tipo_mov_generico.slice(0, 25)}
           </option>
         ))}
       </select>
@@ -134,31 +133,33 @@ export default function FinanceFilters() {
       <select
         name=""
         id=""
+        value={filters.filterMovStatus ?? ""}
+        onChange={(e) => handleChange("filterMovStatus", e.target.value)}
         className="rounded bg-gray-900 text-sm text-white m-2 border-none"
       >
-        <option value="" selected>
-          Estado del movimiento
-        </option>
-        <option value="">Ingresado</option>
-        <option value="">En Revisión</option>
-        <option value="">Confirmado</option>
+        <option value="">Estado del movimiento</option>
+        <option value="Ingresado">Ingresado</option>
+        <option value="En Revisión">En Revisión</option>
+        <option value="Confirmado">Confirmado</option>
       </select>
       <select
         name=""
         id=""
+        value={filters.filterPaymentMethod ?? ""}
+        onChange={(e) => handleChange("filterPaymentMethod", e.target.value)}
         className="rounded bg-gray-900 text-sm text-white m-2 border-none"
       >
-        <option value="" selected>
-          Medio de pago
-        </option>
-        <option value="">Efectivo</option>
-        <option value="">Tranferencia</option>
-        <option value="">Cosa</option>
+        <option value="">Medio de pago</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Transferencia">Tranferencia</option>
+        <option value="Otros">Otros</option>
       </select>
       {user?.scopedBySede !== true ? (
         <select
           name=""
           id=""
+          value={filters.filterBranch ?? ""}
+          onChange={(e) => handleChange("filterBranch", e.target.value)}
           className="rounded bg-gray-900 text-sm text-white m-2 border-none"
         >
           <option value="">Seleccione Sede</option>

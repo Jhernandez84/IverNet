@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/app/utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
+import { useFilters } from "../context/financeContext";
 import FinanzasForm from "./FinanzasForm";
 import {
   ArrowUpIcon,
@@ -15,26 +16,16 @@ import {
 
 import useFinanzas from "../hooks/useFinanzas";
 
-type FiltrosFinanzas = {
-  dateView: string;
-  fechaDesde?: string;
-  fechaHasta?: string;
-  sedeId?: string;
-  tipo?: string;
-  estado?: string;
-  medioPago?: string;
-};
+export default function FinanzasTable() {
+  const { filters, setFilters } = useFilters();
 
-type FinanzasTableProps = {
-  filtros: FiltrosFinanzas;
-};
+  const STORAGE_KEY = "finance_filters";
+  const [filterState, setFiltersState] = useState(STORAGE_KEY);
 
-export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   const { user, loading } = useUserSession();
   // 1) refresh puede ser un contador o booleano para disparar recarga
   const [refresh, setRefresh] = useState(0);
   // 2) filtros según tu UI: aquí un ejemplo con fechas vacías
-  const [filtrosState, setFiltrosState] = useState<FiltrosFinanzas>(filtros);
 
   const [searchValue, setSearchValue] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -46,13 +37,18 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   const [anio, setAnio] = useState<number | null>(null);
 
   useEffect(() => {
-    const currentDate = new Date();
-    setMes(currentDate.getMonth() + 1); // JS months start at 0
-    setAnio(currentDate.getFullYear());
-  }, []);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        setFiltersState(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, [filters]);
 
   // Llamas al hook pasándole lo anterior
-  const resultado = useFinanzas({ refresh, setRefresh, filtros });
+  const resultado = useFinanzas({ refresh, setRefresh });
 
   // El hook retorna null mientras carga el user; espera hasta que no sea null
   if (!resultado) return <p>Cargando datos de finanzas…</p>;
@@ -113,11 +109,19 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
   };
 
   const cierraMes = async () => {
+    let selectedSede = null;
+
+    if (user?.scopedBySede === false) {
+      selectedSede = filters?.filterBranch;
+    } else {
+      selectedSede = user?.sede_id;
+    }
+
     const { data, error } = await supabase.rpc("confirmar_movimientos_mes", {
       p_mes: mes,
       p_anio: anio,
-      p_company_id: user.company_id,
-      p_sede_id: user.sede_id,
+      p_company_id: user?.company_id,
+      p_sede_id: selectedSede,
     });
 
     if (error) {
@@ -129,12 +133,6 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
       setRefresh((prev) => prev + 1);
     }
   };
-
-  const movimientosFiltrados = movimientos.filter((m) =>
-    Object.values(m).some((v) =>
-      String(v).toLowerCase().includes(searchValue.toLowerCase())
-    )
-  );
 
   const allowedRoles = [
     "d3fb021e-0424-4324-91fc-a112646684c7",
@@ -260,12 +258,17 @@ export default function FinanzasTable({ filtros }: FinanzasTableProps) {
         <div className="overflow-y-auto max-h-[60vh]">
           <table className="table-auto w-full text-gray-800 text-sm border-collapse">
             <tbody>
-              {movimientosFiltrados.map((m) => (
+              {movimientos.map((m) => (
                 <tr key={m.id} className="border-t p-2 text-white">
                   <td className="p-2 w-[8%]">{m.fecha}</td>
                   <td className="w-[6%]">{m.tipo}</td>
                   <td className="w-[13%]">{m.mov_grupo}</td>
-                  <td className="w-[15%]">{m.tipo_mov}</td>
+                  <td
+                    className="w-[15%] cursor-pointer"
+                    onClick={() => alert(m.observaciones)}
+                  >
+                    {m.tipo_mov} {" "} ℹ️
+                  </td>
                   <td className="w-[8%]">{m.num_doc}</td>
                   <td className="w-[10%]">{m.metodo_pago}</td>
                   <td className="w-[10%] cursor-pointer">

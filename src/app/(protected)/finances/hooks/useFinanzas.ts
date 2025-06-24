@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/app/utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
+import { useFilters } from "../context/financeContext";
 
 type Movimiento = {
   id: string;
@@ -20,23 +21,16 @@ type Movimiento = {
   sede: string;
 };
 
-type FiltrosFinanzas = {
-  fechaDesde?: string;
-  fechaHasta?: string;
-  sedeId?: string;
-  tipo?: string;
-  estado?: string;
-  medioPago?: string;
-};
-
 type Props = {
   refresh: number;
   setRefresh: React.Dispatch<React.SetStateAction<number>>;
-  filtros?: FiltrosFinanzas;
 };
 
-export default function useFinanzas({ refresh, filtros }: Props) {
+export default function useFinanzas({ refresh }: Props) {
   const { user, loading } = useUserSession();
+  const { filters, setFilters } = useFilters();
+
+  console.log(filters);
 
   const [loadingFinanceData, setLoadingFinanceData] = useState(false);
 
@@ -49,19 +43,27 @@ export default function useFinanzas({ refresh, filtros }: Props) {
   const cargarMovimientos = async () => {
     let query = supabase.from("finanzas").select("*, sedes(nombre)");
 
-    if (filtros?.fechaDesde) query = query.gte("fecha", filtros.fechaDesde);
-    if (filtros?.fechaHasta) query = query.lte("fecha", filtros.fechaHasta);
+    if (filters?.filterStartDate)
+      query = query.gte("fecha", filters.filterStartDate);
+    if (filters?.filterEndDate)
+      query = query.lte("fecha", filters.filterEndDate);
 
     // Si el usuario está limitado por sede, forzar el filtro por sede
     if (user?.scopedBySede && user.sede_id) {
       query = query.eq("sede_id", user.sede_id);
-    } else if (filtros?.sedeId) {
-      query = query.eq("sede_id", filtros.sedeId);
+    } else if (filters?.filterBranch !== null && filters?.filterBranch !== "") {
+      query = query.eq("sede_id", filters.filterBranch);
     }
 
-    if (filtros?.tipo) query = query.eq("tipo", filtros.tipo);
-    if (filtros?.estado) query = query.eq("estado", filtros.estado);
-    if (filtros?.medioPago) query = query.eq("metodo_pago", filtros.medioPago);
+    if (filters?.filterMovement !== null && filters?.filterMovement !== "")
+      query = query.eq("tipo", filters.filterMovement);
+    if (filters?.filterMovStatus !== null && filters?.filterMovStatus !== "")
+      query = query.eq("estado", filters.filterMovStatus);
+    if (
+      filters?.filterPaymentMethod !== null &&
+      filters?.filterPaymentMethod !== ""
+    )
+      query = query.eq("metodo_pago", filters.filterPaymentMethod);
 
     query = query.order(orden.key, { ascending: orden.asc });
 
@@ -81,9 +83,9 @@ export default function useFinanzas({ refresh, filtros }: Props) {
 
   useEffect(() => {
     if (!loading && user) cargarMovimientos();
-  }, [orden, refresh, filtros, loading, user]);
+  }, [orden, refresh, filters, loading, user]);
 
   if (loading || !user) return null;
-  console.log('Movimientos del periodo',movimientos);
+  // console.log("Movimientos del periodo", movimientos);
   return { movimientos, loadingFinanceData };
 }

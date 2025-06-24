@@ -25,7 +25,7 @@ export default function ChartTable({ showData }: chartRender) {
   });
 
   // hook que siempre devuelve un objeto (mejor que pueda devolver null)
-  const finanzas = useFinanzas({ refresh, setRefresh, filtros }) ?? {
+  const finanzas = useFinanzas({ refresh, setRefresh }) ?? {
     movimientos: [],
     loadingFinanceData: true,
   };

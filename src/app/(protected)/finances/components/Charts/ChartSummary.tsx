@@ -21,7 +21,6 @@ export default function ResumenFinancieroPorSede({ showData }: chartRender) {
   const { movimientos, loadingFinanceData } = useFinanzas({
     refresh,
     setRefresh,
-    filtros,
   }) ?? {
     movimientos: [],
     loadingFinanceData: true,

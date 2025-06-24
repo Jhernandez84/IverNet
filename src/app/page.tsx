@@ -3,12 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./utils/supabaseClients";
+import { useUserSession } from "@/hooks/useUserSession";
 import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { user, loading } = useUserSession();
+
+  if (loading) return null;
 
   const router = useRouter();
 
@@ -27,8 +31,6 @@ export default function LoginPage() {
       router.push("/myaccount");
     }
   };
-
-  
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
@@ -74,13 +76,13 @@ export default function LoginPage() {
               className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
-          <Link
+          {/* <Link
             key="signup"
             href="/signup"
             className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
           >
             Crear Cuenta
-          </Link>
+          </Link> */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"

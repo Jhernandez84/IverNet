@@ -17,11 +17,13 @@ type UserSession = {
 
 type SessionContextType = {
   user: UserSession | null;
+  setUser: React.Dispatch<React.SetStateAction<UserSession | null>>;
   loading: boolean;
 };
 
 const UserSessionContext = createContext<SessionContextType>({
   user: null,
+  setUser: () => {},
   loading: true,
 });
 
@@ -36,29 +38,11 @@ export const UserSessionProvider = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const cached = localStorage.getItem("user_session");
-      if (cached) {
-        setUser(JSON.parse(cached));
-        setLoading(false);
-        return;
-      }
-
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (!authUser || authError) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
+    const loadUserProfile = async (userId: string) => {
       const { data: profile, error: profileError } = await supabase
         .from("users")
         .select("id, full_name, email, role, role_id, company_id, sede_id")
-        .eq("id", authUser.id)
+        .eq("id", userId)
         .single();
 
       if (!profile || profileError) {
@@ -93,11 +77,52 @@ export const UserSessionProvider = ({
       setLoading(false);
     };
 
+    const fetchSession = async () => {
+      const cached = localStorage.getItem("user_session");
+      if (cached) {
+        setUser(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
+
+      const {
+        data: { user: authUser },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (!authUser || authError) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      await loadUserProfile(authUser.id);
+    };
+
     fetchSession();
+
+    // 🔄 Escuchar logins y logouts
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
+          setLoading(true);
+          await loadUserProfile(session.user.id);
+        }
+
+        if (event === "SIGNED_OUT") {
+          setUser(null);
+          localStorage.removeItem("user_session");
+        }
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   return (
-    <UserSessionContext.Provider value={{ user, loading }}>
+    <UserSessionContext.Provider value={{ user, setUser, loading }}>
       {children}
     </UserSessionContext.Provider>
   );

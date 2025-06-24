@@ -47,7 +47,7 @@ export default function NavBar() {
     {
       name: "Secretaría",
       href: "/secretaria",
-      key: "secretaria",
+      key: "secretary",
       current: false,
     },
     {
@@ -78,7 +78,7 @@ export default function NavBar() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [openAlerts, setOpenAlerts] = useState(false);
 
-  const { user, loading } = useUserSession();
+  const { user, setUser, loading } = useUserSession();
   if (loading) return null;
 
   const pathname = usePathname();
@@ -89,7 +89,14 @@ export default function NavBar() {
   );
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      localStorage.removeItem("user_session");
+    } else {
+      alert(`"Error al intentar cerrar sesión" ${error.message}`);
+    }
+    localStorage.removeItem("user_session");
+    setUser(null);
     router.push("/login"); // redirige al login
   };
 
@@ -166,6 +173,63 @@ export default function NavBar() {
                                 className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
                               >
                                 Mantenedor
+                              </Link>
+                            </MenuItem>
+                          )}
+                        </MenuItems>
+                      </Menu>
+                    );
+                  }
+                  if (item.key === "secretary") {
+                    return (
+                      <Menu as="div" key={item.key} className="relative">
+                        <div>
+                          <MenuButton
+                            className={classNames(
+                              isActive
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              "rounded-md px-3 py-2 text-sm font-medium"
+                            )}
+                          >
+                            Secretaría
+                          </MenuButton>
+                        </div>
+                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          <MenuItem>
+                            <Link
+                              href="/calendar"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Comunicados
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/calendar"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Lista de miembros
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/calendar"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Inventarios
+                            </Link>
+                          </MenuItem>
+
+                          {user?.scopedBySede === true ? (
+                            []
+                          ) : (
+                            <MenuItem>
+                              <Link
+                                href="/calendar/settings"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
+                              >
+                                Man. Inventarios
                               </Link>
                             </MenuItem>
                           )}
