@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { ReactNode } from "react";
+import ClientWrapper from "../components/navBar/ClientWrapper";
 import NavBar from "../components/navBar/page";
 
 export default async function ProtectedLayout({
@@ -23,7 +24,9 @@ export default async function ProtectedLayout({
 
   return (
     <html lang="es">
-      <NavBar />
+      <ClientWrapper>
+        <NavBar />
+      </ClientWrapper>
       <body>{children}</body>
     </html>
   );

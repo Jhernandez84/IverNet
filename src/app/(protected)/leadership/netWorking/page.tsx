@@ -5,7 +5,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/app/utils/supabaseClients";
 import { getDate } from "date-fns";
-import DynamicTable from "@/app/components/dynamicTable/dyamicTable";
 
 type Member = {
   id: string;
@@ -27,69 +26,6 @@ type Member = {
 };
 
 export default function ChurchMembers() {
-  const members1 = [
-    {
-      nombre: "María Torres",
-      edad: 34,
-      genero: "Femenino",
-      correo: "maria.torres@example.com",
-      telefono: "+56998765432",
-      estado: "Activo",
-      ministerio: "Alabanza",
-      ingreso: "2021-03-15",
-    },
-    {
-      nombre: "Carlos González",
-      edad: 42,
-      genero: "Masculino",
-      correo: "carlos.gonzalez@example.com",
-      telefono: "+56987654321",
-      estado: "Activo",
-      ministerio: "Evangelismo",
-      ingreso: "2020-08-22",
-    },
-    {
-      nombre: "Fernanda Ruiz",
-      edad: 29,
-      genero: "Femenino",
-      correo: "fernanda.ruiz@example.com",
-      telefono: "+56991234567",
-      estado: "Inactivo",
-      ministerio: "Oración",
-      ingreso: "2019-05-10",
-    },
-    {
-      nombre: "Luis Martínez",
-      edad: 37,
-      genero: "Masculino",
-      correo: "luis.martinez@example.com",
-      telefono: "+56999887766",
-      estado: "Activo",
-      ministerio: "Multimedia",
-      ingreso: "2022-01-04",
-    },
-    {
-      nombre: "Camila Soto",
-      edad: 25,
-      genero: "Femenino",
-      correo: "camila.soto@example.com",
-      telefono: "+56988776655",
-      estado: "Pendiente",
-      ministerio: "Bienvenida",
-      ingreso: "2023-07-19",
-    },
-    {
-      nombre: "Jorge Herrera",
-      edad: 50,
-      genero: "Masculino",
-      correo: "jorge.herrera@example.com",
-      telefono: "+56977665544",
-      estado: "Activo",
-      ministerio: "Diaconado",
-      ingreso: "2018-11-30",
-    },
-  ];
-
   const [showModal, setShowModal] = useState(false);
 
   const [members, setMembers] = useState<Member[]>([]);
@@ -162,7 +98,7 @@ export default function ChurchMembers() {
 
   return (
     <>
-      <div className="p-2 bg-gray-900">
+      <div className="p-6">
         {showModal && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center ">
             <div className="bg-gray-700 rounded-lg shadow-lg w-full max-w-xl p-6 relative w-[50vw]">
@@ -270,15 +206,45 @@ export default function ChurchMembers() {
           </div>
         )}
 
-        <DynamicTable
-          data={members1}
-          title="Lista miembros activos"
-          rowsPerPage={10}
-          actionButton={{
-            label: "➕ Agregar Pago",
-            onClick: () => alert("Nueva acción ejecutada"),
-          }}
-        />
+        <p>
+          Esta página mostrará los hermanos bajo un trabajo de Red y los líderes
+          y sus grupos
+        </p>
+        <div className="flex justify-between p-4">
+          <h3 className="text-lg font-semibold mb-2">Listado de miembros</h3>
+          <button
+            type="button"
+            className="bg-blue-600 text-white py-2 px-8 rounded col-span-2 h-8 text-sm"
+            onClick={() => setShowModal(true)}
+          >
+            Agregar miembro
+          </button>
+        </div>
+
+        <div className="overflow-auto max-h-[400px]">
+          <table className="w-full table-auto text-sm">
+            <thead className="bg-gray-700 text-white rounded">
+              <tr>
+                <th className="p-2">Nombre</th>
+                <th className="p-2">Correo</th>
+                <th className="p-2">Teléfono</th>
+                <th className="p-2">Rol</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((m) => (
+                <tr key={m.id} className="border-t">
+                  <td className="p-2">
+                    {m.first_name} {m.last_name} {m.second_last_name}
+                  </td>
+                  <td className="p-2">{m.email}</td>
+                  <td className="p-2">{m.phone}</td>
+                  <td className="p-2">{m.church_role}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );

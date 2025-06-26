@@ -51,6 +51,12 @@ export default function NavBar() {
       current: false,
     },
     {
+      name: "Departamentos",
+      href: "/ministries",
+      key: "ministries",
+      current: false,
+    },
+    {
       name: "Liderazgo",
       href: "/leadership",
       key: "leadership",
@@ -198,7 +204,7 @@ export default function NavBar() {
                         <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                           <MenuItem>
                             <Link
-                              href="/calendar"
+                              href="/secretary/announcements"
                               className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Comunicados
@@ -206,7 +212,7 @@ export default function NavBar() {
                           </MenuItem>
                           <MenuItem>
                             <Link
-                              href="/calendar"
+                              href="/secretary/members"
                               className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Lista de miembros
@@ -214,7 +220,7 @@ export default function NavBar() {
                           </MenuItem>
                           <MenuItem>
                             <Link
-                              href="/calendar"
+                              href="/secretary/listings"
                               className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
                             >
                               Inventarios
@@ -226,10 +232,67 @@ export default function NavBar() {
                           ) : (
                             <MenuItem>
                               <Link
-                                href="/calendar/settings"
+                                href="/secretary/listings/management"
                                 className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
                               >
                                 Man. Inventarios
+                              </Link>
+                            </MenuItem>
+                          )}
+                        </MenuItems>
+                      </Menu>
+                    );
+                  }
+                  if (item.key === "ministries") {
+                    return (
+                      <Menu as="div" key={item.key} className="relative">
+                        <div>
+                          <MenuButton
+                            className={classNames(
+                              isActive
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              "rounded-md px-3 py-2 text-sm font-medium"
+                            )}
+                          >
+                            Departamentos
+                          </MenuButton>
+                        </div>
+                        <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          <MenuItem>
+                            <Link
+                              href="/secretary/announcements"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Mujeres
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/secretary/members"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Hombres
+                            </Link>
+                          </MenuItem>
+                          <MenuItem>
+                            <Link
+                              href="/secretary/listings"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Acción Social
+                            </Link>
+                          </MenuItem>
+
+                          {user?.scopedBySede === true ? (
+                            []
+                          ) : (
+                            <MenuItem>
+                              <Link
+                                href="/secretary/listings/management"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900"
+                              >
+                                ⚙️ Mantenedor
                               </Link>
                             </MenuItem>
                           )}
@@ -294,6 +357,14 @@ export default function NavBar() {
                           </MenuButton>
                         </div>
                         <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          <MenuItem>
+                            <Link
+                              href="/leadership"
+                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                            >
+                              Dashboard
+                            </Link>
+                          </MenuItem>
                           <MenuItem>
                             <Link
                               href="/leadership"
