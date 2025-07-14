@@ -1,14 +1,26 @@
-// src/app/dashboard/page.tsx
+"use client";
+import InventarioManagerForm from "./forms";
+import DynamicTable from "@/app/components/dynamicTable/dyamicTable";
+
 export default function ListingManagement() {
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold">
-        Panel principal de administrador de inventario{" "}
-      </h1>
-      <p>
-        Este panel tendrá el registro de todos los hermanos de la iglesia y
-        permitirá generar los distintos certificados
-      </p>
+      <div className="grid grid-cols-2">
+        <div>
+          <InventarioManagerForm />
+        </div>
+        <div>
+          <DynamicTable
+            data={[]}
+            title="Plantilla de inventarios"
+            rowsPerPage={7}
+            actionButton={{
+              label: "➕ Registrar Inventario",
+              onClick: () => alert("click"),
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }

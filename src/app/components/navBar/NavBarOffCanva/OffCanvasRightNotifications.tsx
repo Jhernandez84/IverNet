@@ -7,9 +7,7 @@ import {
 } from "react";
 import { supabase } from "@/app/utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
-
-import { useCalendarEvents } from "../../calendar/useCalendarEvents";
-import { deleteEventSoft } from "../../calendar/useCalendarEvents";
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 
 interface OffCanvasProps {
   open: boolean;
@@ -61,11 +59,16 @@ OffCanvasProps) {
     // console.log(form);
   };
 
-  const deleteEvent = (evt_Id: any) => {
-    deleteEventSoft(evt_Id);
-  };
+  // const { user, loading } = useUserSession();
+  const { announcements, loading, refetch } = useAnnouncements();
 
-  const { user, loading } = useUserSession();
+  useEffect(() => {
+    if (open) {
+      refetch();
+    }
+  }, [open]);
+
+  // if (loading) return;
 
   return (
     <>
@@ -91,14 +94,35 @@ OffCanvasProps) {
     p-6 z-50
   `}
       >
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-xl font-bold text-white">Notificaciones</p>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-gray-600 text-2xl leading-none"
-          >
-            &times;
-          </button>
+        <div className="flex flex-col h-full">
+          {/* Header fijo */}
+          <div className="flex justify-between items-center pb-4 border-b border-gray-600 sticky top-0 bg-gray-700 z-10">
+            <p className="text-xl font-bold text-white">Notificaciones</p>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-gray-300 text-2xl leading-none hover:text-white"
+            >
+              &times;
+            </button>
+          </div>
+
+          {/* Contenido scrollable */}
+          <div className="overflow-y-auto mt-4 pr-2 flex-1 space-y-3">
+            {announcements.map((n) => (
+              <div
+                key={n.id}
+                className="border p-3 rounded bg-gray-900 text-white shadow-sm"
+              >
+                <div className="font-semibold">
+                  {n.message_type.toUpperCase()}
+                </div>
+                <p>{n.message}</p>
+                {!n.read && (
+                  <span className="text-sm text-yellow-400">🔔 Nuevo</span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </aside>
     </>

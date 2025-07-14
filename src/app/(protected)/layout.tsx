@@ -1,33 +1,14 @@
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { ReactNode } from "react";
-import ClientWrapper from "../components/navBar/ClientWrapper";
-import NavBar from "../components/navBar/page";
+// app/(protected)/layout.tsx
+"use client";
+import { ReactNode } from "react";
+import ProtectedLayoutClient from "../components/navBar/ProtectedLayoutClient";
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const supabase = createServerComponentClient({ cookies });
+import { useUserSession } from "@/hooks/useUserSession";
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export default function ProtectedLayout({ children }: { children: ReactNode }) {
+  const { loading } = useUserSession();
 
-  if (!session) {
-    redirect("/login"); // redirige si no hay sesión
-  } else {
-    console.log(session);
-  }
+  if (loading) return <div className="p-6">Cargandola sesión...</div>;
 
-  return (
-    <html lang="es">
-      <ClientWrapper>
-        <NavBar />
-      </ClientWrapper>
-      <body>{children}</body>
-    </html>
-  );
+  return <ProtectedLayoutClient>{children}</ProtectedLayoutClient>;
 }

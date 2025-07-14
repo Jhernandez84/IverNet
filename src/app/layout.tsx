@@ -1,6 +1,7 @@
 import type { Metadata } from "../../node_modules/next/types";
 import { FiltersFinanceProvider } from "./(protected)/finances/context/financeContext";
 import { UserSessionProvider } from "@/hooks/useUserSession";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,8 +14,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
-      <head />
-      <body className="antialiased">
+      <body>
         <UserSessionProvider>
           <FiltersFinanceProvider>{children}</FiltersFinanceProvider>
         </UserSessionProvider>

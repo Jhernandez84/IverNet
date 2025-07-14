@@ -19,12 +19,16 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function NavBar() {
+  const pathname = usePathname();
+  const router = useRouter();
+
   const baseNavigation = [
     {
       name: "Admin DashBoard",
@@ -84,11 +88,10 @@ export default function NavBar() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [openAlerts, setOpenAlerts] = useState(false);
 
+  const { announcements } = useAnnouncements();
   const { user, setUser, loading } = useUserSession();
-  if (loading) return null;
 
-  const pathname = usePathname();
-  const router = useRouter();
+  if (loading) return null;
 
   const navigation = baseNavigation.filter((item) =>
     user?.access.includes(item.key)
@@ -103,7 +106,7 @@ export default function NavBar() {
     }
     localStorage.removeItem("user_session");
     setUser(null);
-    router.push("/login"); // redirige al login
+    router.push("/"); // redirige a la página principal
   };
 
   return (
@@ -463,20 +466,18 @@ export default function NavBar() {
                     );
                   }
                   return (
-                    <>
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={classNames(
-                          isActive
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "rounded-md px-3 py-2 text-sm font-medium"
-                        )}
-                      >
-                        {item.name}
-                      </Link>
-                    </>
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={classNames(
+                        isActive
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                        "rounded-md px-3 py-2 text-sm font-medium"
+                      )}
+                    >
+                      {item.name}
+                    </Link>
                   );
                 })}
               </div>
@@ -490,7 +491,12 @@ export default function NavBar() {
             >
               <span className="absolute -inset-1.5" />
               <span className="sr-only">View notifications</span>
-              <BellIcon aria-hidden="true" className="size-6" />
+              {announcements.length > 0 ? (
+                <BellIcon aria-hidden="true" className="size-6" />
+              ) : (
+                []
+              )}
+              {/* <BellIcon aria-hidden="true" className="size-6" /> */}
             </button>
             {/* Notificación Dropdown */}
             {/* <Menu as="div" className="relative ml-3">

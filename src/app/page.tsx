@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./utils/supabaseClients";
 import { useUserSession } from "@/hooks/useUserSession";
-import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,23 +11,44 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const { user, loading } = useUserSession();
 
-  if (loading) return null;
+  console.log(email, password);
+
+  // if (loading) return null;
 
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
+    console.log("clicked");
     e.preventDefault();
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    console.log("🔍 Login Result:", { data, error });
 
     if (error) {
       setError(error.message);
     } else {
       router.push("/myaccount");
+      console.log("redirecting");
+    }
+  };
+
+  const handleLoginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `http://localhost:3000/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.error("OAuth Error:", error.message);
+      setError("Error al iniciar sesión con Google");
     }
   };
 
@@ -88,6 +108,14 @@ export default function LoginPage() {
             className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
           >
             Entrar
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLoginWithGoogle}
+            className="w-full bg-red-600 text-white font-semibold py-2 rounded hover:bg-red-700 transition"
+          >
+            Iniciar sesión con Google
           </button>
         </form>
       </div>

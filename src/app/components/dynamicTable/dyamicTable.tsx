@@ -122,6 +122,16 @@ export default function DynamicTable({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (data.length > 0) {
+      const newColumns = Object.keys(data[0]);
+      // Solo actualizar si aún no hay columnas visibles definidas
+      if (visibleColumns.length === 0) {
+        setVisibleColumns(newColumns);
+      }
+    }
+  }, [data]);
+
   return (
     <div
       className="p-4 relative text-white bg-gray-800 rounded-xl border border-gray-600"
@@ -162,7 +172,7 @@ export default function DynamicTable({
               <input
                 type="text"
                 placeholder="Buscar columna..."
-                className="w-full px-2 py-1 mb-2 rounded bg-black border border-gray-600 text-white"
+                className="w-full px-2 py-1 mb-2 rounded bg-gray-900 border border-gray-600 text-white"
                 value={columnSearch}
                 onChange={(e) => setColumnSearch(e.target.value)}
               />
@@ -170,26 +180,31 @@ export default function DynamicTable({
                 .filter((col) =>
                   col.toLowerCase().includes(columnSearch.toLowerCase())
                 )
-                .map((col) => (
-                  <label
-                    key={col}
-                    className="flex items-center px-2 py-1 hover:bg-gray-800 rounded cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={visibleColumns.includes(col)}
-                      onChange={() => toggleColumnVisibility(col)}
-                      className="mr-2 accent-gray-500"
-                    />
-                    <span className="truncate">{col}</span>
-                  </label>
-                ))}
+                .map((col) => {
+                  const isChecked = visibleColumns.includes(col);
+                  return (
+                    <label
+                      key={col}
+                      className={`flex items-center px-2 py-1 rounded cursor-pointer transition-colors ${
+                        isChecked ? "text-green-900" : "hover:bg-gray-600"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleColumnVisibility(col)}
+                        className="mr-2 accent-green-700"
+                      />
+                      <span className="truncate">{col}</span>
+                    </label>
+                  );
+                })}
             </div>
           )}
         </div>
       </div>
 
-      <div className="overflow-auto">
+      <div className="overflow-auto h-[80%]">
         <table className="min-w-full border border-gray-700 text-sm rounded-md">
           <thead>
             <tr className="bg-gray-900 text-gray-300 text-center ">
