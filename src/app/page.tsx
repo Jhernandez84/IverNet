@@ -16,7 +16,6 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
-    console.log("clicked");
     e.preventDefault();
     setError(null);
 
@@ -29,7 +28,6 @@ export default function LoginPage() {
       setError(error.message);
     } else {
       router.push("/myaccount");
-      console.log("redirecting");
     }
   };
 

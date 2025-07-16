@@ -30,6 +30,7 @@ export default function AuthCallback() {
         router.push("/");
         return;
       }
+
       router.push("/myaccount");
     };
 
