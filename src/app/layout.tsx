@@ -1,6 +1,5 @@
 import type { Metadata } from "../../node_modules/next/types";
 import { FiltersFinanceProvider } from "./(protected)/finances/context/financeContext";
-import { UserSessionProvider } from "@/hooks/useUserSession";
 
 import "./globals.css";
 
@@ -15,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <UserSessionProvider>
-          <FiltersFinanceProvider>{children}</FiltersFinanceProvider>
-        </UserSessionProvider>
+        <FiltersFinanceProvider>{children}</FiltersFinanceProvider>
       </body>
     </html>
   );

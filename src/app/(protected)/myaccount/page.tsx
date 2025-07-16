@@ -1,7 +1,6 @@
 "use client";
 
 import { useUserSession } from "@/hooks/useUserSession";
-import Image from "next/image";
 
 export default function MyAccountPage() {
   const { user, loading } = useUserSession();
