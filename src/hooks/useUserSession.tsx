@@ -149,8 +149,6 @@ export const UserSessionProvider = ({
     };
   }, []);
 
-  console.log("🔐 full session data:", user);
-
   return (
     <UserSessionContext.Provider value={{ user, setUser, loading }}>
       {children}
