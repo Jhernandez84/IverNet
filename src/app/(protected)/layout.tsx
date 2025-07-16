@@ -29,7 +29,7 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <UserSessionProvider initialSession={session}>
+    <UserSessionProvider>
       <ProtectedLayoutClient>{children}</ProtectedLayoutClient>
     </UserSessionProvider>
   );
