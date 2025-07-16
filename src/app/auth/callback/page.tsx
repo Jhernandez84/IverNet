@@ -23,9 +23,8 @@ export default function AuthCallback() {
         );
 
         setTimeout(() => {
-          router.push("/myaccount")
+          router.push("/myaccount");
           router.replace("/myaccount");
-
         }, 2500);
       } else {
         router.replace("/myaccount");
