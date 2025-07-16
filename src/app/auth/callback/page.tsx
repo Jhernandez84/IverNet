@@ -35,7 +35,7 @@ export default function AuthCallback() {
     };
 
     getSessionAndUser();
-  }, []);
+  }, [router, supabase]);
 
   return <p className="text-center mt-10">Autenticando...</p>;
 }
