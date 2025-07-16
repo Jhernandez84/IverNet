@@ -98,15 +98,20 @@ export default function NavBar() {
   );
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
+    try {
+      // 1. Sign out desde Supabase (esto intenta borrar la cookie HTTP-only también)
+      const { error } = await supabase.auth.signOut();
+
+      // 2. Siempre limpia el estado local
       localStorage.removeItem("user_session");
-    } else {
-      alert(`"Error al intentar cerrar sesión" ${error.message}`);
+      setUser(null);
+
+      // 3. 🔁 Fuerza recarga limpia para borrar cookies residuales y regenerar layout
+      window.location.href = "/"; // más seguro que router.push
+    } catch (err) {
+      console.error("Error al cerrar sesión", err);
+      alert("Error al intentar cerrar sesión");
     }
-    localStorage.removeItem("user_session");
-    setUser(null);
-    router.push("/"); // redirige a la página principal
   };
 
   return (
