@@ -1,14 +1,24 @@
 // app/(protected)/layout.tsx
-"use client";
 import { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { UserSessionProvider } from "@/hooks/useUserSession"; // Asegúrate que exportas esto
 import ProtectedLayoutClient from "../components/navBar/ProtectedLayoutClient";
 
-import { useUserSession } from "@/hooks/useUserSession";
+export default async function ProtectedLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const supabase = createServerComponentClient({ cookies });
 
-export default function ProtectedLayout({ children }: { children: ReactNode }) {
-  const { loading } = useUserSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (loading) return <div className="p-6">Cargandola sesión...</div>;
-
-  return <ProtectedLayoutClient>{children}</ProtectedLayoutClient>;
+  return (
+    <UserSessionProvider initialSession={session}>
+      <ProtectedLayoutClient>{children}</ProtectedLayoutClient>
+    </UserSessionProvider>
+  );
 }
