@@ -1,4 +1,3 @@
-// app/(protected)/layout.tsx
 import { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -10,19 +9,23 @@ export default async function ProtectedLayout({
 }: {
   children: ReactNode;
 }) {
+  // ✅ Asegura el uso correcto de cookies para producción
   const supabase = createServerComponentClient({ cookies: () => cookies() });
 
+  // ✅ Obtiene la sesión actual desde cookies (SSR)
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Seguridad: verifica la sesión con el servidor
+  // ✅ Verifica si el usuario existe desde el token (más seguro)
   const { data: user, error } = await supabase.auth.getUser();
 
   if (!session || !user || error) {
-    // Opcional: redireccionar si no hay sesión válida
+    console.warn("🔒 No hay sesión válida en SSR:", { session, error });
+    // Opcional: Redirigir si es necesario
     // redirect("/login");
-    console.warn("No hay sesión válida");
+  } else {
+    console.log("✅ SSR session OK:", user);
   }
 
   return (
