@@ -30,11 +30,6 @@ export default function AuthCallback() {
         router.push("/");
         return;
       }
-
-      console.log("📧 Email:", user.email);
-      console.log("🙍 Nombre:", user.user_metadata.full_name);
-      console.log("🖼️ Avatar:", user.user_metadata.avatar_url);
-
       router.push("/myaccount");
     };
 
