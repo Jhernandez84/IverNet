@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import NavBar from "./page"; // tu componente NavBar
+import NavBar from "./NavBar"; // tu componente NavBar
 import { useUserSession } from "@/hooks/useUserSession";
 
 export default function ProtectedLayoutClient({
@@ -11,7 +11,7 @@ export default function ProtectedLayoutClient({
 }) {
   const { loading } = useUserSession();
 
-  if (loading) return <div className="p-4 text-white">Cargand  d...</div>;
+  if (loading) return <div className="p-4 text-white">Cargand d...</div>;
 
   return (
     <div className="flex flex-col min-h-screen">
