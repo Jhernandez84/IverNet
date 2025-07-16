@@ -255,11 +255,9 @@ export default function MonthlyCalendar() {
         day = addDays(day, 1);
       }
       rows.push(
-        <>
-          <div key={day.toISOString()} className="grid grid-cols-7 bg-gray-600">
-            {days}
-          </div>
-        </>
+        <div key={day.toISOString()} className="grid grid-cols-7 bg-gray-600">
+          {days}
+        </div>
       );
       days = [];
     }

@@ -7,6 +7,7 @@ type UserSession = {
   id: string;
   full_name: string;
   email: string;
+  avatar_url?: string;
   role: string;
   role_id: string;
   company_id: string;
@@ -40,6 +41,10 @@ export const UserSessionProvider = ({
   useEffect(() => {
     const loadUserProfile = async (userId: string) => {
       try {
+        const { data: authUser, error: authError } =
+          await supabase.auth.getUser();
+        const metadata = authUser?.user?.user_metadata || {};
+
         const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("id, full_name, email, role, role_id, company_id, sede_id")
@@ -67,8 +72,9 @@ export const UserSessionProvider = ({
 
         const fullUser: UserSession = {
           id: profile.id,
-          full_name: profile.full_name,
           email: profile.email,
+          full_name: profile.full_name || metadata.full_name || "",
+          avatar_url: metadata.avatar_url || "", // viene desde Google
           role: profile.role,
           role_id: profile.role_id,
           company_id: profile.company_id,
@@ -101,23 +107,23 @@ export const UserSessionProvider = ({
         return;
       }
 
-      const cached = localStorage.getItem("user_session");
-      if (cached) {
-        try {
-          const parsed: UserSession = JSON.parse(cached);
-          if (parsed?.id === authUser.id) {
-            setUser(parsed);
-            setLoading(false);
-            return;
-          } else {
-            localStorage.removeItem("user_session");
-          }
-        } catch (e) {
-          console.warn("⚠️ Error al parsear user_session:", e);
-          localStorage.removeItem("user_session");
-        }
+      // 🔍 Verifica si el email existe en la tabla users
+      const { data: existingUser, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", authUser.email)
+        .single();
+
+      if (!existingUser || userError) {
+        console.warn("❌ Usuario no autorizado:", authUser.email);
+        await supabase.auth.signOut(); // ⛔ Cierra sesión
+        setUser(null);
+        localStorage.removeItem("user_session");
+        setLoading(false);
+        return;
       }
 
+      // ✅ Si todo bien, cargar el perfil por ID
       await loadUserProfile(authUser.id);
     };
 
@@ -142,6 +148,8 @@ export const UserSessionProvider = ({
       authListener?.subscription.unsubscribe();
     };
   }, []);
+
+  console.log("🔐 full session data:", user);
 
   return (
     <UserSessionContext.Provider value={{ user, setUser, loading }}>

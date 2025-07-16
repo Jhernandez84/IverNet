@@ -205,14 +205,18 @@ export default function NavBar() {
                           </MenuButton>
                         </div>
                         <MenuItems className="absolute p-0 mt-2 w-40 origin-top-left rounded-md ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                          <MenuItem>
-                            <Link
-                              href="/secretary/announcements"
-                              className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
-                            >
-                              Comunicados
-                            </Link>
-                          </MenuItem>
+                          {user?.role === "admin" ? (
+                            <MenuItem>
+                              <Link
+                                href="/secretary/announcements"
+                                className="block px-4 py-2 text-sm text-white rounded bg-gray-700 hover:bg-gray-900 mb-1"
+                              >
+                                Comunicados
+                              </Link>
+                            </MenuItem>
+                          ) : (
+                            []
+                          )}
                           <MenuItem>
                             <Link
                               href="/secretary/members"
@@ -547,11 +551,19 @@ export default function NavBar() {
                 <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">Open user menu</span>
-                  <img
-                    alt=""
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    className="size-8 rounded-full"
-                  />
+                  {user?.avatar_url ? (
+                    <Image
+                      src={user.avatar_url}
+                      alt={user.full_name}
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-bold">
+                      {user?.full_name?.charAt(0) ?? "?"}
+                    </div>
+                  )}
                 </MenuButton>
               </div>
               <MenuItems

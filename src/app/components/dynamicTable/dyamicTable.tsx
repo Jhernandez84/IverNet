@@ -9,6 +9,10 @@ interface DynamicTableProps {
     label: string;
     onClick: () => void;
   };
+  refreshButton?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 export default function DynamicTable({
@@ -16,6 +20,7 @@ export default function DynamicTable({
   title,
   rowsPerPage = 5,
   actionButton,
+  refreshButton,
 }: DynamicTableProps) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -158,52 +163,60 @@ export default function DynamicTable({
             setCurrentPage(1);
           }}
         />
-
-        <div className="relative" ref={columnDropdownRef}>
-          <button
-            onClick={() => setShowColumnDropdown((prev) => !prev)}
-            className="border border-gray-700 bg-gray-500 px-3 py-1.5 rounded-md text-sm hover:bg-gray-800"
-          >
-            ⚙️
-          </button>
-
-          {showColumnDropdown && (
-            <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded-md shadow-lg text-sm z-30 p-2">
-              <input
-                type="text"
-                placeholder="Buscar columna..."
-                className="w-full px-2 py-1 mb-2 rounded bg-gray-900 border border-gray-600 text-white"
-                value={columnSearch}
-                onChange={(e) => setColumnSearch(e.target.value)}
-              />
-              {columns
-                .filter((col) =>
-                  col.toLowerCase().includes(columnSearch.toLowerCase())
-                )
-                .map((col) => {
-                  const isChecked = visibleColumns.includes(col);
-                  return (
-                    <label
-                      key={col}
-                      className={`flex items-center px-2 py-1 rounded cursor-pointer transition-colors ${
-                        isChecked ? "text-green-900" : "hover:bg-gray-600"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleColumnVisibility(col)}
-                        className="mr-2 accent-green-700"
-                      />
-                      <span className="truncate">{col}</span>
-                    </label>
-                  );
-                })}
-            </div>
+        <div className="grid grid-cols-2 gap-4">
+          {refreshButton && (
+            <button
+              onClick={refreshButton.onClick}
+              className="text-white px-4 py-1.5 rounded-md text-sm font-medium bg-green-700 hover:bg-green-600"
+            >
+              {refreshButton.label}
+            </button>
           )}
+          <div className="relative" ref={columnDropdownRef}>
+            <button
+              onClick={() => setShowColumnDropdown((prev) => !prev)}
+              className="border border-gray-700 bg-gray-500 px-3 py-1.5 rounded-md text-sm hover:bg-gray-800"
+            >
+              ⚙️
+            </button>
+
+            {showColumnDropdown && (
+              <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded-md shadow-lg text-sm z-30 p-2">
+                <input
+                  type="text"
+                  placeholder="Buscar columna..."
+                  className="w-full px-2 py-1 mb-2 rounded bg-gray-900 border border-gray-600 text-white"
+                  value={columnSearch}
+                  onChange={(e) => setColumnSearch(e.target.value)}
+                />
+                {columns
+                  .filter((col) =>
+                    col.toLowerCase().includes(columnSearch.toLowerCase())
+                  )
+                  .map((col) => {
+                    const isChecked = visibleColumns.includes(col);
+                    return (
+                      <label
+                        key={col}
+                        className={`flex items-center px-2 py-1 rounded cursor-pointer transition-colors ${
+                          isChecked ? "text-green-900" : "hover:bg-gray-600"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleColumnVisibility(col)}
+                          className="mr-2 accent-green-700"
+                        />
+                        <span className="truncate">{col}</span>
+                      </label>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
       <div className="overflow-auto h-[80%]">
         <table className="min-w-full border border-gray-700 text-sm rounded-md">
           <thead>

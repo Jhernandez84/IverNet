@@ -79,43 +79,6 @@ export default function InventarioManagerForm() {
     console.log(categoryData, subCategoryData);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setLoading(true);
-    setSuccess(false);
-    setError(null);
-
-    const { error } = await supabase
-      .from("church_inventories_category_manager")
-      .insert({
-        ...categoryData,
-        company_id: user.company_id,
-        sede_id: user.sede_id,
-        user_id: user.id,
-      });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess(true);
-      setCategoryData({
-        category_id: "",
-        category_name: "",
-        category_description: "",
-        isActive: true,
-      });
-      setSubCategoryData({
-        category_id: "",
-        subcategory_name: "",
-        subcategory_description: "",
-        subcategory_isActive: true,
-      });
-    }
-
-    setLoading(false);
-  };
-
   const createCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;

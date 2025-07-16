@@ -21,6 +21,7 @@ type RawInventoryRecord = {
 
 export default function ListingPage() {
   const [modal, setModal] = useState(false);
+  const [refresh, setRefresh] = useState(0);
   const { user } = useUserSession();
 
   const [records, setRecords] = useState<
@@ -30,9 +31,9 @@ export default function ListingPage() {
       descripcion: string;
       fecha_ingreso: string;
       quantity: string;
-      category_id: string;
+      // category_id: string;
       category_name: string;
-      subcategory_id: string;
+      // subcategory_id: string;
       subcategory_name: string;
     }[]
   >([]);
@@ -84,18 +85,22 @@ export default function ListingPage() {
         descripcion: rec.descripcion,
         fecha_ingreso: rec.fecha_ingreso,
         quantity: rec.quantity,
-        category_id: (rec.category_id as any)?.id ?? "",
+        // category_id: (rec.category_id as any)?.id ?? "",
         category_name: (rec.category_id as any)?.category_name ?? "—",
-        subcategory_id: (rec.subCategoryID as any)?.id ?? "",
+        // subcategory_id: (rec.subCategoryID as any)?.id ?? "",
         subcategory_name: (rec.subCategoryID as any)?.subcategory_name ?? "—",
       }));
       setRecords(transformed);
     }
   };
 
+  const refreshData = () => {
+    setRefresh(refresh + 1);
+  };
+
   useEffect(() => {
     fetchRecords();
-  }, [user]);
+  }, [user, refreshData]);
 
   const fieldMap = {
     id: "rec_ID",
@@ -125,6 +130,10 @@ export default function ListingPage() {
           actionButton={{
             label: "➕ Registrar Inventario",
             onClick: () => modalHandler(),
+          }}
+          refreshButton={{
+            label: "🔃 Actualizar",
+            onClick: () => refreshData(),
           }}
         />
       </div>

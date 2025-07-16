@@ -11,8 +11,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const { user, loading } = useUserSession();
 
-  console.log(email, password);
-
   // if (loading) return null;
 
   const router = useRouter();
@@ -27,8 +25,6 @@ export default function LoginPage() {
       password,
     });
 
-    console.log("🔍 Login Result:", { data, error });
-
     if (error) {
       setError(error.message);
     } else {
@@ -42,7 +38,7 @@ export default function LoginPage() {
       provider: "google",
       options: {
         // redirectTo: `${window.location.origin}/auth/callback`,
-        redirectTo: `http://localhost:3000/auth/callback`,
+        redirectTo: "http://localhost:3000/auth/callback",
       },
     });
 
