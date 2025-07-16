@@ -9,33 +9,36 @@ export default function AuthCallback() {
   const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const getSessionAndUser = async () => {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+    const checkAuth = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
 
-      if (sessionError || !session) {
-        console.error("No hay sesión válida:", sessionError?.message);
-        router.push("/");
-        return;
+      if (!sessionData.session) {
+        const { data: listener } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (event === "SIGNED_IN" && session?.user) {
+              listener?.subscription.unsubscribe();
+              router.replace("/myaccount");
+            }
+          }
+        );
+
+        setTimeout(() => {
+          router.push("/myaccount")
+          router.replace("/myaccount");
+
+        }, 2500);
+      } else {
+        router.replace("/myaccount");
       }
-
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError || !user) {
-        console.error("No se pudo obtener usuario:", userError?.message);
-        router.push("/");
-        return;
-      }
-
-      router.push("/myaccount");
     };
 
-    getSessionAndUser();
+    checkAuth();
   }, [router, supabase]);
 
-  return <p className="text-center mt-10">Autenticando...</p>;
+  return (
+    <div className="flex flex-col items-center justify-center h-screen text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid mb-4" />
+      <p className="text-lg text-gray-700">Autenticando...</p>
+    </div>
+  );
 }
