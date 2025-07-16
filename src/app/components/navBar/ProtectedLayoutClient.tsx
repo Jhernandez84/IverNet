@@ -11,7 +11,7 @@ export default function ProtectedLayoutClient({
 }) {
   const { loading } = useUserSession();
 
-  if (loading) return <div className="p-4 text-white">Cargand d...</div>;
+  if (loading) return <div className="p-4 text-black">Cargando nav bar...</div>;
 
   return (
     <div className="flex flex-col min-h-screen">
