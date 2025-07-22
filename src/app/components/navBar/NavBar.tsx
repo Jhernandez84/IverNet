@@ -91,7 +91,7 @@ export default function NavBar() {
   const { announcements } = useAnnouncements();
   const { user, setUser, loading } = useUserSession();
 
-  if (loading) return null;
+  // if (loading) return null;
 
   const navigation = baseNavigation.filter((item) =>
     user?.access.includes(item.key)

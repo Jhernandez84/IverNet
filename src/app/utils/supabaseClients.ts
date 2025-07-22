@@ -1,3 +1,6 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+// app/utils/supabaseClient.ts
+"use client";
 
-export const supabase = createClientComponentClient();
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
+
+export const supabase = createPagesBrowserClient();
